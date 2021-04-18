@@ -71,7 +71,8 @@ class RobonectWifiModul extends IPSModule
             SetValue($this->GetIDForIdent("status"), $data['status']['status']);
             SetValue($this->GetIDForIdent("distance"), $data['status']['distance']);
             SetValue($this->GetIDForIdent("stopped"), $data['status']['stopped']);
-            SetValue($this->GetIDForIdent("statusSince"), $data['status']['distance']);
+            $statusSinceTimestamp = time() - $data['status']['duration'];
+            SetValue($this->GetIDForIdent("statusSince"), $statusSinceTimestamp);
             SetValue($this->GetIDForIdent("mode"), $data['status']['mode']);
             SetValue($this->GetIDForIdent("batterySOC"), $data['status']['battery']);
             SetValue($this->GetIDForIdent("hours"), $data['status']['hours']);
@@ -106,11 +107,18 @@ class RobonectWifiModul extends IPSModule
             IPS_SetVariableProfileAssociation("ROBONECT_Modus", 3, "Demo", "", 0xFFFFFF);
         }
 
-        if ( !IPS_VariableProfileExists('RCTPOWER_Stunden') ) {
-            IPS_CreateVariableProfile('RCTPOWER_Stunden', 1 );
-            IPS_SetVariableProfileDigits('RCTPOWER_Stunden', 0 );
-            IPS_SetVariableProfileIcon('RCTPOWER_Stunden', 'Clock' );
-            IPS_SetVariableProfileText('RCTPOWER_Stunden', "", " h" );
+        if ( !IPS_VariableProfileExists('ROBONECT_JaNein') ) {
+            IPS_CreateVariableProfile('ROBONECT_JaNein', 0 );
+            IPS_SetVariableProfileIcon('ROBONECT_JaNein', '' );
+            IPS_SetVariableProfileAssociation("ROBONECT_JaNein", true, "Ja", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_JaNein", false, "Nein", "", 0xFFFFFF);
+        }
+
+        if ( !IPS_VariableProfileExists('ROBONECT_Stunden') ) {
+            IPS_CreateVariableProfile('ROBONECT_Stunden', 1 );
+            IPS_SetVariableProfileDigits('ROBONECT_Stunden', 0 );
+            IPS_SetVariableProfileIcon('ROBONECT_Stunden', 'Clock' );
+            IPS_SetVariableProfileText('ROBONECT_Stunden', "", " h" );
         }
 
     }
@@ -124,11 +132,11 @@ class RobonectWifiModul extends IPSModule
         //--- Status -------------------------------------------------------------
         $this->RegisterVariableInteger("status", "Status", "ROBONECT_Status", 10);
         $this->RegisterVariableInteger("distance", "Entfernung", "", 11);
-        $this->RegisterVariableBoolean("stopped", "man. angehalten", "", 12);
+        $this->RegisterVariableBoolean("stopped", "man. angehalten", "ROBONECT_JaNein", 12);
         $this->RegisterVariableFloat("statusSince", "Status seit", "", 13);
         $this->RegisterVariableInteger("mode", "Modus", "ROBONECT_Modus", 14);
         $this->RegisterVariableInteger("batterySOC", "Akkustand", "~Intensity.100", 15);
-        $this->RegisterVariableInteger("hours", "Arbeitsstunden", "RCTPOWER_Stunden", 16);
+        $this->RegisterVariableInteger("hours", "Arbeitsstunden", "ROBONECT_Stunden", 16);
 
         //--- Timer --------------------------------------------------------------
 
