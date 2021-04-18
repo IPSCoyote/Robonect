@@ -148,6 +148,7 @@ class RobonectWifiModul extends IPSModule
         $this->RegisterVariableInteger("batterySOC", "Akkustand", "~Intensity.100", 16);
         $this->RegisterVariableInteger("hours", "Arbeitsstunden", "ROBONECT_Stunden", 17);
 
+
         //--- Timer --------------------------------------------------------------
 
         //--- WLAN ---------------------------------------------------------------
