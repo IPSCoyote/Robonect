@@ -78,8 +78,8 @@ class RobonectWifiModul extends IPSModule
                 if ( intdiv($data['status']['duration']) > 1 ) $Text = $Text.'en';
             } else {
                 $Text = "";
-                if ( intdiv( $data['status']['duration'], 3600 ) > 0 ) $Text = intdiv( $data['status']['duration'], 3600 ).":";
-                $Text = $Text.date("i", $data['status']['duration'] );
+                if ( intdiv( $data['status']['duration'], 3600 ) > 0 ) $Text = intdiv( $data['status']['duration'], 3600 )." Stunden ";
+                $Text = $Text.date("i", $data['status']['duration'] ). " Minuten";
             }
             SetValue($this->GetIDForIdent("statusSinceDescriptive"), $Text);
             SetValue($this->GetIDForIdent("mode"), $data['status']['mode']);
