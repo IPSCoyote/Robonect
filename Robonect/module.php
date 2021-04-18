@@ -24,7 +24,7 @@ class RobonectWifiModul extends IPSModule {
 
 
         public function Update() {
-            $IPAddress = trim($this->ReadPropertyString("IPAddressCharger"));
+            $IPAddress = trim($this->ReadPropertyString("IPAddress"));
             $Username  = trim($this->ReadPropertyString("Username"));
             $Password  = trim($this->ReadPropertyString("Password"));
 
