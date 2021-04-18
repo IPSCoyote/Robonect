@@ -73,6 +73,15 @@ class RobonectWifiModul extends IPSModule
             SetValue($this->GetIDForIdent("stopped"), $data['status']['stopped']);
             $statusSinceTimestamp = time() - $data['status']['duration'];
             SetValue($this->GetIDForIdent("statusSince"), $statusSinceTimestamp);
+            if ( intdiv( $data['status']['duration'], 86400 ) > 0 ) {
+                $Text = intdiv($data['status']['duration']).' Tag';
+                if ( intdiv($data['status']['duration']) > 1 ) $Text = $Text.'en';
+            } else {
+                $Text = "";
+                if ( intdiv( $data['status']['duration'], 3600 ) > 0 ) $Text = intdiv( $data['status']['duration'], 3600 ).":";
+                $Text = $Text.date("i", $data['status']['duration'] );
+            }
+            SetValue($this->GetIDForIdent("statusSinceDescriptive"), $Text);
             SetValue($this->GetIDForIdent("mode"), $data['status']['mode']);
             SetValue($this->GetIDForIdent("batterySOC"), $data['status']['battery']);
             SetValue($this->GetIDForIdent("hours"), $data['status']['hours']);
@@ -134,9 +143,10 @@ class RobonectWifiModul extends IPSModule
         $this->RegisterVariableInteger("distance", "Entfernung", "", 11);
         $this->RegisterVariableBoolean("stopped", "man. angehalten", "ROBONECT_JaNein", 12);
         $this->RegisterVariableInteger("statusSince", "Status seit", "~UnixTimestamp", 13);
-        $this->RegisterVariableInteger("mode", "Modus", "ROBONECT_Modus", 14);
-        $this->RegisterVariableInteger("batterySOC", "Akkustand", "~Intensity.100", 15);
-        $this->RegisterVariableInteger("hours", "Arbeitsstunden", "ROBONECT_Stunden", 16);
+        $this->RegisterVariableInteger("statusSinceDescriptive", "Status seit", "~UnixTimestamp", 14);
+        $this->RegisterVariableInteger("mode", "Modus", "ROBONECT_Modus", 15);
+        $this->RegisterVariableInteger("batterySOC", "Akkustand", "~Intensity.100", 16);
+        $this->RegisterVariableInteger("hours", "Arbeitsstunden", "ROBONECT_Stunden", 17);
 
         //--- Timer --------------------------------------------------------------
 
