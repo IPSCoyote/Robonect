@@ -24,18 +24,24 @@ class RobonectWifiModul extends IPSModule {
 
 
         public function Update() {
+            // get data via HTTP Request
             $IPAddress = trim($this->ReadPropertyString("IPAddress"));
             $Username  = trim($this->ReadPropertyString("Username"));
             $Password  = trim($this->ReadPropertyString("Password"));
 
-            // get data via HTTP status request
-            $ch = curl_init('http://'.$IPAddress.'/json?cmd=status&user='.$Username.'&pass='.$Password );
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $json = curl_exec($ch);
-            curl_close ($ch);
+            // HTTP status request
+            $URL = 'http://'.$IPAddress.'/json?cmd=status&user='.$Username.'&pass='.$Password;
+            try {
+                $ch = curl_init($URL);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                $json = curl_exec($ch);
+                curl_close($ch);
+            } catch (Exception $e) {
+                return false;
+            };
 
             if ( $json == false) return false;
             return json_decode($json,true);
