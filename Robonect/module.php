@@ -30,12 +30,15 @@ class RobonectWifiModul extends IPSModule {
             $Password  = trim($this->ReadPropertyString("Password"));
 
             // HTTP status request
-            $URL = 'http://'.$IPAddress.'/json?cmd=status&user='.$Username.'&pass='.$Password;
+            $URL = 'http://'.$IPAddress.'/json?cmd=status';
             try {
-                $ch = curl_init($URL);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-                curl_setopt($ch, CURLOPT_HEADER, 0);
+                $ch = curl_init();
+                curl_setopt_array($ch, [
+                    CURLOPT_URL => $URL,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+                    CURLOPT_USERPWD => $Username . ':' . $Password,
+                ]);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                 $json = curl_exec($ch);
                 curl_close($ch);
