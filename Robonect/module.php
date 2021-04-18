@@ -28,7 +28,7 @@ class RobonectWifiModul extends IPSModule {
             $Username  = trim($this->ReadPropertyString("Username"));
             $Password  = trim($this->ReadPropertyString("Password"));
 
-            $data  = file_get_contents('http://'.$IPAddress.'/json?cmd=status&user='.$Username."&pass='.$Password);
+            $data  = file_get_contents('http://'.$IPAddress.'/json?cmd=status&user='.$Username.'&pass='.$Password );
             if ( $data == false) return false;
             return json_decode($data,true);
         }
