@@ -9,6 +9,8 @@ class RobonectWifiModul extends IPSModule {
      *
      */
     public function Update() {
-        echo $this->InstanceID;
+        $json  = file_get_contents('http://192.168.1.30/json?cmd=status');
+        if ($json == false) return false;
+        return json_decode($json,true);
     }
 }
