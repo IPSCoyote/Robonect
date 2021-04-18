@@ -9,7 +9,7 @@ class RobonectWifiModul extends IPSModule {
      *
      */
     public function Update() {
-        $json  = file_get_contents('http://192.168.1.30/json?cmd=status');
+        $json  = file_get_contents('http://RobonectAdmin:sV?a6-tsv;l[4F2V@192.168.1.30/json?cmd=status');
         if ($json == false) return false;
         return json_decode($json,true);
     }
