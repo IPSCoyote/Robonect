@@ -1,5 +1,7 @@
 ### IP-Symcon Modul zur Einbindung eines mit einem Robonect-Rasenmäher WLAN Modul erweiterten, Mähroboter
 
+<img src="./imgs/Robonect%20Logo.png">
+
 PHP-Modul zur Einbindung von [Robonect](https://www.robonect-shop.de)-WLAN Modulen zur Steuerung eines Mähroboters.
 
 Nutzung auf eigene Gefahr ohne Gewähr. Das Modul kann jederzeit überarbeitet werden, so daß Anpassungen für eine weitere Nutzung notwendig sein können. Bei der Weiterentwicklung wird möglichst auf Kompatibilität geachtet.
