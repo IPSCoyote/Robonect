@@ -1,4 +1,4 @@
-### IP-Symcon Modul zur Einbindung eines mit einem Robonect-Rasenmäher WLAN Modul erweiterten, Mähroboter
+### IP-Symcon Modul zur Einbindung eines mit einem Robonect-Rasenmäher-WLAN Modul erweiterten, Mähroboters
 
 <img src="./imgs/Robonect%20Logo.png">
 
@@ -30,8 +30,6 @@ Das Ziel des Moduls ist eine bessere und simple Einbindung in die IPS Haussteuer
 - Installiertes Robonect Modul im Mähroboter (getestet mit einem Robonect-HX Modul in einem Husqvarna Automover 105)
 
 ## 3. Installation
-
-### 3.1 Alternative Verwendung eines MQTT-Servers für Datenupdates
 
 ## 4. Module
 

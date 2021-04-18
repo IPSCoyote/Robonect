@@ -1,0 +1,14 @@
+{
+  "id": "{169FA82D-CFA6-EF9C-6490-AFFC882D0181}",
+  "name": "RobonectWifiModul",
+  "type": 3,
+  "vendor": "Robonect",
+  "aliases":
+  [
+    "Robonect HX"
+  ],
+  "parentRequirements": ["{C6D2AEB3-6E1F-4B2E-8E69-3A1A00246850}"],
+  "childRequirements": [],
+  "implemented": [],
+  "prefix": "Robonect"
+}
