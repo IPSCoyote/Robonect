@@ -8,9 +8,28 @@ class RobonectWifiModul extends IPSModule {
      * ABC_MeineErsteEigeneFunktion($id);
      *
      */
-    public function Update() {
-        $json  = file_get_contents('http://RobonectAdmin:sV?a6-tsv;l[4F2V@192.168.1.30/json?cmd=status');
-        if ($json == false) return false;
-        return json_decode($json,true);
+
+    public function Create()
+    {
+        /* Create is called ONCE on Instance creation and start of IP-Symcon.
+           Status-Variables und Modul-Properties for permanent usage should be created here  */
+        parent::Create();
+
+        // Properties Robonect Wifi Module
+        $this->RegisterPropertyString("IPAddress", '0.0.0.0' );
+        $this->RegisterPropertyString("Username", '' );
+        $this->RegisterPropertyString("Password", '' );
     }
+
+
+
+        public function Update() {
+            $IPAddress = trim($this->ReadPropertyString("IPAddressCharger"));
+            $Username  = trim($this->ReadPropertyString("Username"));
+            $Password  = trim($this->ReadPropertyString("Password"));
+
+            $data  = file_get_contents('http://'.$IPAddress.'/json?cmd=status&user='.$Username."&pass='.$Password);
+            if ( $data == false) return false;
+            return json_decode($data,true);
+        }
 }

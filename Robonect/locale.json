@@ -3,6 +3,9 @@
     "de": {
       "Disclaimer": "Dieses Modul wurde unabhängig vom Hersteller des Robonect Moduls entwickelt. Die Benutzung des Moduls erfolgt auf eigene Gefahr unter Ausschluss jeglicher Gewährleistung für Probleme oder Schäden am Robonect Modul.",
 
+      "Username": "Benutzername",
+      "Password": "Passwort",
+
       "Basic Data - INPUT A": "PV Paneldaten - Eingang A",
       "Basic Data - INPUT B": "PV Paneldaten - Eingang B",
       "Basic Data": "Grunddaten",
