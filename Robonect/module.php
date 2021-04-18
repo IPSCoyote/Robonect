@@ -68,13 +68,13 @@ class RobonectWifiModul extends IPSModule
             $data = json_decode($json, true);
             $dataStatus = $data['status'];
             SetValue($this->GetIDForIdent("name"), $data['name']);
-            SetValue($this->GetIDForIdent("status"), $dataStatus->{'status'});
-            SetValue($this->GetIDForIdent("distance"), $dataStatus->{'distance'});
-            SetValue($this->GetIDForIdent("stopped"), $dataStatus->{'duration'});
-            SetValue($this->GetIDForIdent("statusSince"), $dataStatus->{'distance'});
-            SetValue($this->GetIDForIdent("mode"), $dataStatus->{'mode'});
-            SetValue($this->GetIDForIdent("batterySOC"), $dataStatus->{'battery'});
-            SetValue($this->GetIDForIdent("hours"), $dataStatus->{'hours'});
+            SetValue($this->GetIDForIdent("status"), $data['status']['status']);
+            SetValue($this->GetIDForIdent("distance"), $data['status']['distance']);
+            SetValue($this->GetIDForIdent("stopped"), $data['status']['duration']);
+            SetValue($this->GetIDForIdent("statusSince"), $data['status']['distance']);
+            SetValue($this->GetIDForIdent("mode"), $data['status']['mode']);
+            SetValue($this->GetIDForIdent("batterySOC"), $data['status']['battery']);
+            SetValue($this->GetIDForIdent("hours"), $data['status']['hours']);
         }
 
     }
