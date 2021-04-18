@@ -133,7 +133,7 @@ class RobonectWifiModul extends IPSModule
         $this->RegisterVariableInteger("status", "Status", "ROBONECT_Status", 10);
         $this->RegisterVariableInteger("distance", "Entfernung", "", 11);
         $this->RegisterVariableBoolean("stopped", "man. angehalten", "ROBONECT_JaNein", 12);
-        $this->RegisterVariableFloat("statusSince", "Status seit", "", 13);
+        $this->RegisterVariableInteger("statusSince", "Status seit", "", 13);
         $this->RegisterVariableInteger("mode", "Modus", "ROBONECT_Modus", 14);
         $this->RegisterVariableInteger("batterySOC", "Akkustand", "~Intensity.100", 15);
         $this->RegisterVariableInteger("hours", "Arbeitsstunden", "ROBONECT_Stunden", 16);
