@@ -6,6 +6,10 @@
       "Username": "Benutzername",
       "Password": "Passwort",
 
+      "AutomaticUpdate": "Automatische Updates",
+      "UpdateTimer": "Update alle",
+      "seconds": "Sekunden",
+
       "Basic Data - INPUT A": "PV Paneldaten - Eingang A",
       "Basic Data - INPUT B": "PV Paneldaten - Eingang B",
       "Basic Data": "Grunddaten",

@@ -33,5 +33,105 @@ Das Ziel des Moduls ist eine bessere und simple Einbindung in die IPS Haussteuer
 
 ## 4. Module
 
+### 4.1 Robonect Wifi Modul
+
+#### 4.1.1. Status Variablen
+
+Im Folgenden werden die verfügbaren Statusvariablen mit ihren Eigenschaften, Werten und Zugriffsmöglichkeiten aufgelistet. Wenn Funktionen verfügbar sind, sind diese im Anschluss aufgelistet.
+
+- RO = **R**ead **O**nly<br>
+- RW = **R**ead **W**rite enabled<br>
+- WF = **W**eb**f**rond change enabled (die Variablen können zwecks Anzeige natürlich alle ins Webfront eingebunden werden)
+
+Name | Type | Optionen | Werte | Funktionen
+:--- | :---: |  :---:  | :---  | :---:
+`Name` | String | RO | Name des Rasenmähers (lt. Einstellung) | 
+`Status` | Integer | RW | aktueller Status des Rasenmähers | Kann über diverse Methoden (ggf. indirekt) gesetzt werden
+`Entferung` | Integer | RO | Entfernung des Rasenmähers |
+`man. angehalten` | Boolean | RW | Angabe, ob der Rasenmäher manuell angehalten wurde | Kann u.a. über die [Start](#startint-instanz) / [Stop](#stopint-instanz) beeinflusst werden 
+`Status seit` | Integer | RO | Seit wann gilt der aktuelle Status als TimeStamp.<br>Während des Mähens ist der Wert verlässlich. Ansonsten kann er durch das "Schlafen" des Mähers falsch sein!  |
+`Statisu seit` | String | RO | Seit wann gilt der aktuelle Status als String.<br>Während des Mähens ist der Wert verlässlich. Ansonsten kann er durch das "Schlafen" des Mähers falsch sein!  |
+`Modus` | Integer | RW | Aktueller Modus des Rasenmähers | Kann über diverse Methoden (ggf. indirekt) gesetzt werden
+`Akkustand` | Integer | RO | SoC der Batterie |
+`Arbeitsstunden` | Integer | RO | Arbeitsstunden des Rasenmähers |
+`Anzahl Fehlermeldungen` | Integer | RO | Anzahl der Fehlermeldungen im Fehlerspeicher.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlistint-instanz) aktualisiert werden.
+`Fehlermeldungen` | String | RO | Fehlermeldungen im Fehlerspeicher als HTML-Tabelle.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlistint-instanz) aktualisiert werden.
+`Timer Status | Integer | RW | Status des Timers | Kann über die Moduswahl beeinflusst werden.
+`WLAN Signalstärke` | Integer | RO | Signalstärke des WLAN |
+`Temperatur im Rasenmäher` | Integer | RO | Temperatur im Innern des Rasenmähers |
+`Feuchtigkeit im Rasenmäher` | Integer | RO | Feuchtigkeit im Innern des Rasenmähers |
+`Interner Unix Zeitstempel` | Integer | RO | Zeitstempel der internen Uhr des Rasenmähers |
+
+#### 4.1.2. Funktionen
+
+#### Update( int $Instanz )
+Mit dieser Funktion können die Statusvariablen manuell aktualisiert werden.
+```
+Robonect_Update( $Instanz ); // Aktualisierten der Statusvariablen
+```
+
+#### UpdateErrorList( int $Instanz )
+Mit dieser Funktion kann die Fehlerliste (sowie die Anzahl der Fehler) manuell aktualisiert werden.
+```
+Robonect_UpdateErrorList( $Instanz ); // Aktualisiert die Fehlerdaten
+```
+
+#### ClearErrors( int $Instanz )
+Mit dieser Funktion können die Fehlermeldungen gelöscht werden.
+```
+Robonect_ClearErrors( $Instanz ); // Löschen des Fehlerspeichers
+```
+
+#### DriveHome( int $Instanz )
+Fährt den Rasenmäher in seine Ladestation.
+```
+Robonect_DriveHome( $Instanz ); // Fährt den Rasenmäher in seine Ladestation
+```
+
+#### SetMode( int $Instanz, string $mode )
+Mit dieser Funktion kann der Modus des Rasenmähers gesetzt werden.
+```
+Robonect_SetMode( $Instanz, 'home' ); // Fährt den Rasenmäher in seine Ladestation
+```
+Erlaubte Modi sind:
+* home : Wechseln des Modus nach "Home"
+* eod : Wechseln des Modus nach "Feierabend" (EndOfDay)
+* man : Wechseln des Modus nach "Manuell"
+* auto : Wechseln des Modus nach "Automatisch"
+
+#### SetMowingNow( int $Instanz, string $duration )
+Startet das Mähen des Rasenmähers für eine angegebene Zeit. Der Rasenmäher fährt anschließend wieder in seine Ladestation.
+```
+Robonect_StartMowingNow( $Instanz, 90 ); // lässt den Rasenmäher für 90 Minuten mähen
+```
+
+#### ScheduleJob( int Instanz, int $duration, string $modeAfter, string $start, string $stop )
+Plant einen Job für den Rasenmäher ein.
+```
+Robonect_ScheduleJob( $Instanz, 90, 'home', '20:00', '23:00' ); // lässt den Rasenmäher ab 20:00 für 90 Minuten mähen und fährt ihn anschließend wieder in die Ladestation
+```
+Erklärung der Parameter:
+* duration: Die Dauer, welche gemäht werden soll
+* modeAfter: der Modus, der nach dem Mähen angefahren werden soll ( '' = 'home')
+* start: Startzeit, zu welcher der Auftrag beginnen soll ( '' = sofort )
+* stop: Endzeit, zu welcher der Job beendet werden soll ( '' = sofort + duration )
+
+Ein weiteres Beispiel:
+```
+Robonect_ScheduleJob( $Instanz, 90, '', '', '' ); // entspricht dem Kommando StartMowingNow( $Instanz, 90 )
+```
+
+#### Start( int $Instanz )
+Mit dieser Funktion kann der Rasenmäher wieder gestartet werden (Rückkehr zum letzten Modus), wenn er zuvor gestoppt wurde.
+```
+Robonect_Start( $Instanz ); // Starten des Rasenmähers
+```
+
+#### Stop( int $Instanz )
+Mit dieser Funktion kann der Rasenmäher gestoppt werden.
+```
+Robonect_Stop( $Instanz ); // Stoppen des Rasenmähers
+```
+
 ## 5. Versionshistorie
 

@@ -8,6 +8,9 @@
     { "type": "Label", "caption": "Disclaimer" },
     { "type": "ValidationTextBox", "name": "IPAddress", "caption": "IP-Adresse", "validate": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" },
     { "type": "ValidationTextBox", "name": "Username", "caption": "Username" },
-    { "type": "PasswordTextBox", "name":  "Password", "caption":  "Password" }
+    { "type": "PasswordTextBox", "name":  "Password", "caption":  "Password" },
+    { "type": "CheckBox", "name": "HTTPUpdateTimer", "caption":  "AutomaticUpdate" },
+    { "type": "NumberSpinner", "name": "UpdateTimer", "caption":  "UpdateTimer", "minimum":  10, "maximum":  300, "suffix":  "seconds" }
+
   ]
 }
