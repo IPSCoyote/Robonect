@@ -210,7 +210,7 @@ class RobonectWifiModul extends IPSModule
         }
     }
 
-    public function SetMode( $mode ) {
+    public function SetMode( string $mode ) {
         // Set Mode of the Mower
 
         // check parameter
@@ -292,6 +292,65 @@ class RobonectWifiModul extends IPSModule
         } else {
             return $data['successful'];
         }
+    }
+
+    public function GetTimer() {
+        // reads all timer information and transfers it to an IPS Timer Instance
+
+        define( 'WEEKDAYS', ['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su'] );
+
+        $data = $this->executeHTTPCommand( 'timer' );
+        if ( !isset( $data ) or  !isset( $data['timer'] ) or !isset( $data['successful'] ) or ( $data['successful'] != true ) ) { return false; }
+
+        if ( $this->GetIDForIdent('TimerPlanActive' ) == false ) { return false; }
+
+        $weekPlanEventID = IPS_GetEventIDByName( 'Timer Wochen Plan', $this->GetIDForIdent('TimerPlanActive' ));
+        if ( $weekPlanEventID == false ) { return false; }
+
+        // delete and re-create the ScheduleGroups to rebuild them from scratch
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 0, 0 );
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 1, 0 );
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 2, 0 );
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 3, 0 );
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 4, 0 );
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 5, 0 );
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 6, 0 );
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 0, 1);  // Mon
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 1, 2);  // Tue
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 2, 4);  // Wed
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 3, 8);  // Thu
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 4, 16); // Fri
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 5, 32);  // Sat
+        IPS_SetEventScheduleGroup( $weekPlanEventID, 6, 64); // Sun
+        IPS_SetEventScheduleGroupPoint( $weekPlanEventID, 0, 1, 0, 0, 0, 1);
+        IPS_SetEventScheduleGroupPoint( $weekPlanEventID, 1, 1, 0, 0, 0, 1);
+        IPS_SetEventScheduleGroupPoint( $weekPlanEventID, 2, 1, 0, 0, 0, 1);
+        IPS_SetEventScheduleGroupPoint( $weekPlanEventID, 3, 1, 0, 0, 0, 1);
+        IPS_SetEventScheduleGroupPoint( $weekPlanEventID, 4, 1, 0, 0, 0, 1);
+        IPS_SetEventScheduleGroupPoint( $weekPlanEventID, 5, 1, 0, 0, 0, 1);
+        IPS_SetEventScheduleGroupPoint( $weekPlanEventID, 6, 1, 0, 0, 0, 1);
+
+        $timerList = $data['timer'];
+        for ( $x = 0; $x<=13; $x++ ) {
+
+            $timer = $timerList[$x];
+            if ( $timer['enabled'] == true ) {
+
+                for ( $weekday = 0; $weekday <= 6; $weekday = $weekday + 1 ) {
+                    if ( $timer['weekdays'][WEEKDAYS[$weekday]] ) {
+                        $startHour = intval( substr( $timer['start'], 0, 2 ) );
+                        $startMinutes = intval( substr( $timer['start'], 3, 2 ) );
+                        IPS_SetEventScheduleGroupPoint( $weekPlanEventID, $weekday, 2, $startHour, $startMinutes, 0, 2 );
+                        $stopHour = intval( substr( $timer['end'], 0, 2 ) );
+                        $stopMinutes = intval( substr( $timer['end'], 3, 2 ) );
+                        IPS_SetEventScheduleGroupPoint( $weekPlanEventID, $weekday, 3, $stopHour, $stopMinutes, 0, 1 );
+                    }
+                }
+
+            }
+        }
+
+        return $data;
     }
 
 
@@ -397,6 +456,36 @@ class RobonectWifiModul extends IPSModule
 
         //--- Timer --------------------------------------------------------------
         $this->RegisterVariableInteger( "TimerStatus", "Timer Status", "ROBONECT_TimerStatus", 30 );
+
+        $TimerPlanActiveID = $this->RegisterVariableBoolean( "TimerPlanActive", "Timer-Plan aktiv", "", 31 );
+        // check, if timer Plan Active is already there
+        if ( IPS_GetEventIDByName( 'Timer Wochen Plan', $TimerPlanActiveID ) == false ) {
+            $weekPlanID = IPS_CreateEvent(2); // Weekplan
+            IPS_SetParent($weekPlanID, $TimerPlanActiveID);
+            IPS_SetName($weekPlanID, 'Timer Wochen Plan');
+
+            IPS_SetEventScheduleGroup($weekPlanID, 0, 1);  // Mon
+            IPS_SetEventScheduleGroup($weekPlanID, 1, 2);  // Tue
+            IPS_SetEventScheduleGroup($weekPlanID, 2, 4);  // Wed
+            IPS_SetEventScheduleGroup($weekPlanID, 3, 8);  // Thu
+            IPS_SetEventScheduleGroup($weekPlanID, 4, 16); // Fri
+            IPS_SetEventScheduleGroup($weekPlanID, 5, 32);  // Sat
+            IPS_SetEventScheduleGroup($weekPlanID, 6, 64); // Sun
+
+            IPS_SetEventScheduleAction($weekPlanID, 1, "mähen beenden", 0x000000, "SetValueBoolean(\$_IPS['TARGET'], false);");
+            IPS_SetEventScheduleAction($weekPlanID, 2, "mähen beginnen", 0x00FF00, "SetValueBoolean(\$_IPS['TARGET'], true);");
+
+            IPS_SetEventScheduleGroupPoint($weekPlanID, 0, 1, 0, 0, 0, 1);
+            IPS_SetEventScheduleGroupPoint($weekPlanID, 1, 1, 0, 0, 0, 1);
+            IPS_SetEventScheduleGroupPoint($weekPlanID, 2, 1, 0, 0, 0, 1);
+            IPS_SetEventScheduleGroupPoint($weekPlanID, 3, 1, 0, 0, 0, 1);
+            IPS_SetEventScheduleGroupPoint($weekPlanID, 4, 1, 0, 0, 0, 1);
+            IPS_SetEventScheduleGroupPoint($weekPlanID, 5, 1, 0, 0, 0, 1);
+            IPS_SetEventScheduleGroupPoint($weekPlanID, 6, 1, 0, 0, 0, 1);
+
+            IPS_SetEventActive($weekPlanID, true);
+        }
+
 
         //--- WLAN ---------------------------------------------------------------
         $this->RegisterVariableInteger( "WLANSignal", "WLAN Signalstärke", "~Intensity.100", 50 );

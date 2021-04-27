@@ -56,7 +56,8 @@ Name | Type | Optionen | Werte | Funktionen
 `Arbeitsstunden` | Integer | RO | Arbeitsstunden des Rasenmähers |
 `Anzahl Fehlermeldungen` | Integer | RO | Anzahl der Fehlermeldungen im Fehlerspeicher.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlistint-instanz) aktualisiert werden.
 `Fehlermeldungen` | String | RO | Fehlermeldungen im Fehlerspeicher als HTML-Tabelle.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlistint-instanz) aktualisiert werden.
-`Timer Status | Integer | RW | Status des Timers | Kann über die Moduswahl beeinflusst werden.
+`Timer Status` | Integer | RW | Status des Timers | Kann über die Moduswahl beeinflusst werden.
+`Timer-Plan aktiv` | Boolean | RO | Ist ein interner Timer des Rasenmähers aktiv?<br>Unter der Variable befindet sich ein Wochenplan, der die Timer-Definitionen im Rasenmäher darstellt. Er kann aktuell nur gelesen werden und muss manuell aktualisiert werden.<br>ACHTUNG: Der Wochenplan muss(!) "Timer Wochen Plan" heißen. Ansonsten wird ein neuer Plan angelegt! | Der unterliegende Wochenplan kann über die Funktion [GetTimer](#gettimerint-instanz) aktualisiert werden.
 `WLAN Signalstärke` | Integer | RO | Signalstärke des WLAN |
 `Temperatur im Rasenmäher` | Integer | RO | Temperatur im Innern des Rasenmähers |
 `Feuchtigkeit im Rasenmäher` | Integer | RO | Feuchtigkeit im Innern des Rasenmähers |
@@ -86,6 +87,13 @@ Robonect_ClearErrors( $Instanz ); // Löschen des Fehlerspeichers
 Fährt den Rasenmäher in seine Ladestation.
 ```
 Robonect_DriveHome( $Instanz ); // Fährt den Rasenmäher in seine Ladestation
+```
+
+#### GetTimer( int $Instanz )
+Mit dieser Funktion können die programmierten Timer des Rasenmähers ausgelesen und der Wochenplan unterhalb der Status-Variable "Timer-Plan aktiv" aktualisert werden.
+Die Methode liefert entweder ein JSON oder FALSE;
+```
+Robonect_GetTimer( $Instanz ); // Auslesen der Timer
 ```
 
 #### SetMode( int $Instanz, string $mode )
