@@ -48,16 +48,16 @@ Name | Type | Optionen | Werte | Funktionen
 `Name` | String | RO | Name des Rasenmähers (lt. Einstellung) | 
 `Status` | Integer | RW | aktueller Status des Rasenmähers | Kann über diverse Methoden (ggf. indirekt) gesetzt werden
 `Entferung` | Integer | RO | Entfernung des Rasenmähers |
-`man. angehalten` | Boolean | RW | Angabe, ob der Rasenmäher manuell angehalten wurde | Kann u.a. über die [Start](#startint-instanz) / [Stop](#stopint-instanz) beeinflusst werden 
+`man. angehalten` | Boolean | RW | Angabe, ob der Rasenmäher manuell angehalten wurde | Kann u.a. über die [Start](#start-int-instanz-) / [Stop](#stop-int-instanz-) beeinflusst werden 
 `Status seit` | Integer | RO | Seit wann gilt der aktuelle Status als TimeStamp.<br>Während des Mähens ist der Wert verlässlich. Ansonsten kann er durch das "Schlafen" des Mähers falsch sein!  |
 `Statisu seit` | String | RO | Seit wann gilt der aktuelle Status als String.<br>Während des Mähens ist der Wert verlässlich. Ansonsten kann er durch das "Schlafen" des Mähers falsch sein!  |
 `Modus` | Integer | RW | Aktueller Modus des Rasenmähers | Kann über diverse Methoden (ggf. indirekt) gesetzt werden
 `Akkustand` | Integer | RO | SoC der Batterie |
 `Arbeitsstunden` | Integer | RO | Arbeitsstunden des Rasenmähers |
-`Anzahl Fehlermeldungen` | Integer | RO | Anzahl der Fehlermeldungen im Fehlerspeicher.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlistint-instanz) aktualisiert werden.
-`Fehlermeldungen` | String | RO | Fehlermeldungen im Fehlerspeicher als HTML-Tabelle.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlistint-instanz) aktualisiert werden.
+`Anzahl Fehlermeldungen` | Integer | RO | Anzahl der Fehlermeldungen im Fehlerspeicher.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlist-int-instanz-) aktualisiert werden.
+`Fehlermeldungen` | String | RO | Fehlermeldungen im Fehlerspeicher als HTML-Tabelle.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlist-int-instanz-) aktualisiert werden.
 `Timer Status` | Integer | RW | Status des Timers | Kann über die Moduswahl beeinflusst werden.
-`Timer-Plan aktiv` | Boolean | RO | Ist ein interner Timer des Rasenmähers aktiv?<br>Unter der Variable befindet sich ein Wochenplan, der die Timer-Definitionen im Rasenmäher darstellt. Er kann aktuell nur gelesen werden und muss manuell aktualisiert werden.<br>ACHTUNG: Der Wochenplan muss(!) "Timer Wochen Plan" heißen. Ansonsten wird ein neuer Plan angelegt! | Der unterliegende Wochenplan kann über die Funktion [GetTimer](#gettimerint-instanz) aktualisiert werden.
+`Timer-Plan aktiv` | Boolean | RO | Ist ein interner Timer des Rasenmähers aktiv?<br>Unter der Variable befindet sich ein Wochenplan, der die Timer-Definitionen im Rasenmäher darstellt. Er kann aktuell nur gelesen werden und muss manuell aktualisiert werden.<br>ACHTUNG: Der Wochenplan muss(!) "Timer Wochen Plan" heißen. Ansonsten wird ein neuer Plan angelegt! | Der unterliegende Wochenplan kann über die Funktion [GetTimer](#gettimer-int-instanz-) aktualisiert werden.
 `WLAN Signalstärke` | Integer | RO | Signalstärke des WLAN |
 `Temperatur im Rasenmäher` | Integer | RO | Temperatur im Innern des Rasenmähers |
 `Feuchtigkeit im Rasenmäher` | Integer | RO | Feuchtigkeit im Innern des Rasenmähers |
