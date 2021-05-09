@@ -3,36 +3,29 @@
     "de": {
       "Disclaimer": "Dieses Modul wurde unabhängig vom Hersteller des Robonect Moduls entwickelt. Die Benutzung des Moduls erfolgt auf eigene Gefahr unter Ausschluss jeglicher Gewährleistung für Probleme oder Schäden am Robonect Modul.",
 
+      "Login": "Login Daten des Robonect Moduls (benötigt zur Steuerung)",
       "Username": "Benutzername",
       "Password": "Passwort",
 
-      "AutomaticUpdate": "Automatische Updates",
+      "AutomaticUpdate": "Automatische Updates (nicht benötigt bei MQTT Updates)",
       "UpdateTimer": "Update alle",
       "seconds": "Sekunden",
 
-      "Basic Data - INPUT A": "PV Paneldaten - Eingang A",
-      "Basic Data - INPUT B": "PV Paneldaten - Eingang B",
-      "Basic Data": "Grunddaten",
-      "Automatische Updates": "Automatische Updates",
-      "Automatische Updates aktiv": "automatische Updates aktiv",
-      "Update Interval": "(Minimum = 15 Sek.)",
-      "Keine": "Keine",
-      "2 (3.8 kWh)":  "2 Stackmodule (3.8kWh)",
-      "3 (5.7 kWh)":  "3 Stackmodule (5.7kWh)",
-      "4 (7.6 kWh)":  "4 Stackmodule (7.6kWh)",
-      "5 (9.6 kWh)":  "5 Stackmodule (9.6kWh)",
-      "6 (11.5 kWh)": "6 Stackmodule (11.7kWh)",
-      "Auf fremde Abfragen reagieren": "Auf fremde Abfragen reagieren (Achtung! Gefahr von Datenfehlern wenn mehrere Wechselrichter vorhanden sind!)",
-      "Fehlerhafte Antwort-Sequenz ignorieren": "Fehlerhafte Antwort-Sequence ignorieren",
-      "CRC Fehler ignorieren": "CRC Fehler ignorieren",
+      "MQTT Topic Label": "MQTT Topic",
+      "MQTTTopic": "Eingestelltes MQTT Topic im Robonect Modul",
+
+      "DefaultValues": "Vorgabewerte",
+      "MowingTime": "Mähzeit bei Sofortstart",
+      "minutes": "Minuten",
 
       "Check Connection": "Verbindung testen",
-      "GO-eCharger identified": "RCT Power Wechselrichter gefunden",
+
+      "Robonect identified": "Robonect gefunden",
       "Configuration missing": "Konfiguration fehlt",
       "IP invalid": "IP Adresse ungültig",
       "No device found on IP": "Kein Gerät antwortet an der IP Adresse",
-      "No Data returned from IP": "Keine Daten von IP Adresse geliefert",
-      "No RCT Power Inverter available at IP": "Kein RCT Power Wechselrichter an IP Adresse erreichbar"
+      "No JSON returned from IP": "Kein JSON wird an der IP Adresse geliefert",
+      "No Robonect available at IP": "Kein Robonect an IP Adresse erreichbar"
     }
   }
 }
