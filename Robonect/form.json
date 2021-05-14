@@ -10,8 +10,21 @@
     { "type": "Label", "caption": "   " },
     { "type": "Label", "label": "Login" },
     { "type": "ValidationTextBox", "name": "IPAddress", "caption": "IP-Adresse", "validate": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" },
-    { "type": "ValidationTextBox", "name": "Username", "caption": "Username" },
-    { "type": "PasswordTextBox", "name":  "Password", "caption":  "Password" },
+    {
+      "type": "RowLayout",
+      "items": [
+        {
+          "type": "ValidationTextBox",
+          "name": "Username",
+          "caption": "Username"
+        },
+        {
+          "type": "PasswordTextBox",
+          "name": "Password",
+          "caption": "Password"
+        }
+      ]
+    },
 
     { "type": "Label", "caption": "   " },
     { "type": "Label", "label": "AutomaticUpdate" },
@@ -24,7 +37,11 @@
 
     { "type": "Label", "caption": "   " },
     { "type": "Label", "label": "DefaultValues" },
-    { "type": "NumberSpinner", "name": "MowingTime", "caption":  "MowingTime", "minimum":  10, "maximum": 780, "suffix":  "minutes" }
+    { "type": "NumberSpinner", "name": "MowingTime", "caption":  "MowingTime", "minimum":  10, "maximum": 780, "suffix":  "minutes" },
+
+    { "type": "Label", "caption": "   " },
+    { "type": "Label", "label": "Debugging" },
+    { "type": "CheckBox", "name": "DebugLog", "caption":  "DebugLog" }
   ],
   "actions":
   [

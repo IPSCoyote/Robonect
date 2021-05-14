@@ -31,9 +31,41 @@ Das Ziel des Moduls ist eine bessere und simple Einbindung in die IPS Haussteuer
 
 ## 3. Installation
 
+Vor der Installation des Moduls in IPSymcon muss das Robonect-Modul (die Hardware) im Rasenmäher vollständig installiert und eingerichtet sein. Da dieses Modul lokal auf das Robonect-Modul im Rasenmäher zugreift, muss im lokalen WLAN dem Robonect-Hardwaremodul eine statische IP zugewiesen sein. 
+
+Als nächstes wird eine Instanz des Robonect-Robonect HX Moduls angelegt
+
+<p align="center">
+  <img width="322" height="335" src="./imgs/Instanz%20anlegen.png">
+</p>
+
+welches anschließend konfiguriert werden muss.
+
+### 3.1 Konfiguration
+
+<p align="center">
+  <img width="800" height="462" src="./imgs/Instanz%20anlegen.png">
+</p>
+
+#### Login Daten
+Die statische IP-Adresse es Robonect-Hardware-Moduls sowie der Admin Benutzer und sein Passwort. Dies wird benötigt, um einerseits Daten abzurufen und andererseits auch den Mähroboter steuern zu können. 
+
+#### Automatische Updates
+Hier kann man die automatischen Updates des Moduls sowie das zugehörige Zeitinterval einstellen. Sollte der Robonect-MQTT Client konfiguriert worden sein, kann das Update-Interval höher ausfallen. Aber leider liefert MQTT nicht alle Daten, weshalb man ggf. nicht auf die automatischen Updates komplett verzichen sollte, sondern das Intervall höher einstellt.
+
+#### MQTT Topic
+Hier stellt man das MQTT Topic ein, welches man im Robonect-Hardwaremodul (Webinterface) eingestellt hat. Dieses Modul reagiert nur auf das hier festgelegte Topic.
+Zur Verwendung von MQTT muss diesem Modul eine Gateway zugeordnet werden (-> Server Socket -> MQTT Server (die Logindaten und der Port dieses Servers müssen im Robonect-Modul (Kommunikation - MQTT-Client) angegeben werden)).
+
+#### Vorgabewerte
+Hier können ggf. notwendige Defaultwerte festgelegt werden. So kann man das Mähen des Mähroboters mit einem Befehl starten, der eine Mähdauer erwartet (oder z.B. über das Webfront direkt). Die dann benötigte Mähzeit wird hier festgelegt.
+
+#### Debugging Tools
+Für die Fehlersuche kann das Debug-Log aktiviert werden. Ansonsten sollte es aber deaktiviert bleiben.
+
 ## 4. Module
 
-### 4.1 Robonect Wifi Modul
+### 4.1 Robonect HX Wifi Modul
 
 #### 4.1.1. Status Variablen
 
@@ -45,22 +77,31 @@ Im Folgenden werden die verfügbaren Statusvariablen mit ihren Eigenschaften, We
 
 Name | Type | Optionen | Werte | Funktionen
 :--- | :---: |  :---:  | :---  | :---:
-`Name` | String | RO | Name des Rasenmähers (lt. Einstellung) | 
-`Status` | Integer | RW | aktueller Status des Rasenmähers | Kann über diverse Methoden (ggf. indirekt) gesetzt werden
-`Entferung` | Integer | RO | Entfernung des Rasenmähers |
+`Name` | String | RO | Name des Rasenmähers (lt. Einstellung) |
+`Seriennummer` | String | RO | Seriennummer des Rasenmähers |
+`Modus` | Integer | WF | Bedienbarer Modus im Webfront! (manuell oder Timer) |
+`Aktion` | Integer | WF | Bedienbare Aktion im Webfront! ('jetzt mähen', 'pause', 'mähen beenden') |
+`Modus` | Integer | RW | Aktueller Modus des Rasenmähers | Kann über diverse Methoden (ggf. indirekt) gesetzt werden
+`Status` | Integer | RO | aktueller Status des Rasenmähers |
+`Status (Klartext)` | String | RO | aktueller Status des Rasenmähers, geliefert vom Rasenmäher! (MQTT) |
+`Substatus` | Integer | RO | aktueller Substatus des Rasenmähers (MQTT) |
+`Substatus (Klartext)` | String | RO | aktueller Substatus des Rasenmähers, geliefert vom Rasenmäher! (MQTT) |
 `man. angehalten` | Boolean | RW | Angabe, ob der Rasenmäher manuell angehalten wurde | Kann u.a. über die [Start](#start-int-instanz-) / [Stop](#stop-int-instanz-) beeinflusst werden 
 `Status seit` | Integer | RO | Seit wann gilt der aktuelle Status als TimeStamp.<br>Während des Mähens ist der Wert verlässlich. Ansonsten kann er durch das "Schlafen" des Mähers falsch sein!  |
 `Statisu seit` | String | RO | Seit wann gilt der aktuelle Status als String.<br>Während des Mähens ist der Wert verlässlich. Ansonsten kann er durch das "Schlafen" des Mähers falsch sein!  |
-`Modus` | Integer | RW | Aktueller Modus des Rasenmähers | Kann über diverse Methoden (ggf. indirekt) gesetzt werden
 `Akkustand` | Integer | RO | SoC der Batterie |
+`Akku-Spannung` | Float | RO | Spannung der Batterie (MQTT) |
+`Interne Spannung` | Float | RO | Interne Spannung (MQTT) |
+`Externe Spannung` | Float | RO | Externe Spannung (MQTT) |
 `Arbeitsstunden` | Integer | RO | Arbeitsstunden des Rasenmähers |
-`Anzahl Fehlermeldungen` | Integer | RO | Anzahl der Fehlermeldungen im Fehlerspeicher.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlist-int-instanz-) aktualisiert werden.
-`Fehlermeldungen` | String | RO | Fehlermeldungen im Fehlerspeicher als HTML-Tabelle.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlist-int-instanz-) aktualisiert werden.
-`Timer Status` | Integer | RW | Status des Timers | Kann über die Moduswahl beeinflusst werden.
-`Timer-Plan aktiv` | Boolean | RO | Ist ein interner Timer des Rasenmähers aktiv?<br>Unter der Variable befindet sich ein Wochenplan, der die Timer-Definitionen im Rasenmäher darstellt. Er kann aktuell nur gelesen werden und muss manuell aktualisiert werden.<br>ACHTUNG: Der Wochenplan muss(!) "Timer Wochen Plan" heißen. Ansonsten wird ein neuer Plan angelegt! | Der unterliegende Wochenplan kann über die Funktion [GetTimerFromMower](#gettimer-int-instanz-) aktualisiert werden.
 `WLAN Signalstärke` | Integer | RO | Signalstärke des WLAN |
 `Temperatur im Rasenmäher` | Integer | RO | Temperatur im Innern des Rasenmähers |
 `Feuchtigkeit im Rasenmäher` | Integer | RO | Feuchtigkeit im Innern des Rasenmähers |
+`Anzahl Fehlermeldungen` | Integer | RO | Anzahl der Fehlermeldungen im Fehlerspeicher.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlist-int-instanz-) aktualisiert werden.
+`Fehlermeldungen` | String | RO | Fehlermeldungen im Fehlerspeicher als HTML-Tabelle.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlist-int-instanz-) aktualisiert werden.
+`Timer Status` | Integer | RW | Status des Timers | Kann über die Moduswahl beeinflusst werden.
+`Timer-Plan aktiv` | Boolean | RO | Ist ein interner Timer des Rasenmähers aktiv?<br>Unter der Variable befindet sich ein Wochenplan, der die Timer-Definitionen im Rasenmäher darstellt. Er kann in beide Richtungen übertragen werden!<br>ACHTUNG: Der Wochenplan muss(!) "Timer Wochen Plan" heißen. Ansonsten würde ein neuer Plan angelegt! | Der unterliegende Wochenplan kann über die Funktion [GetTimerFromMower](#gettimer-int-instanz-) aus dem Rasenmäher aktualisiert werden.<br>Mit der Funktion [SetTimerToMower](#settimer-int-instanz-) kann er in den Rasenmäher übertragen werden.
+`nächster Timerstart | Integer | RO | UNIX Zeitstempel des nächsten Timerstarts lt. Rasenmäher
 `Interner Unix Zeitstempel` | Integer | RO | Zeitstempel der internen Uhr des Rasenmähers |
 
 #### 4.1.2. Funktionen
@@ -72,7 +113,7 @@ Robonect_Update( $Instanz ); // Aktualisierten der Statusvariablen
 ```
 
 #### UpdateErrorList( int $Instanz )
-Mit dieser Funktion kann die Fehlerliste (sowie die Anzahl der Fehler) manuell aktualisiert werden.
+Mit dieser Funktion kann die Fehlerliste (sowie die Anzahl der Fehler) manuell aktualisiert werden. Leider ist die Robonect-Hardware hier etwas zickig und liefert nicht immer Daten :(
 ```
 Robonect_UpdateErrorList( $Instanz ); // Aktualisiert die Fehlerdaten
 ```
@@ -81,27 +122,6 @@ Robonect_UpdateErrorList( $Instanz ); // Aktualisiert die Fehlerdaten
 Mit dieser Funktion können die Fehlermeldungen gelöscht werden.
 ```
 Robonect_ClearErrors( $Instanz ); // Löschen des Fehlerspeichers
-```
-
-#### DriveHome( int $Instanz )
-Fährt den Rasenmäher in seine Ladestation.
-```
-Robonect_DriveHome( $Instanz ); // Fährt den Rasenmäher in seine Ladestation
-```
-
-#### GetTimerFromMower( int $Instanz )
-Mit dieser Funktion können die programmierten Timer des Rasenmähers ausgelesen und der Wochenplan unterhalb der Status-Variable "Timer-Plan aktiv" aktualisert werden.
-Die Methode liefert entweder ein JSON oder FALSE;
-ACHTUNG: Timer im Wochenplan werden gelöscht und neu geschrieben!
-```
-Robonect_GetTimer( $Instanz ); // Auslesen der Timer
-```
-
-#### SetTimerToMower( int $Instanz )
-Mit dieser Funktion können die programmierten Timer des Wochenplans unterhalb der Status-Variable "Timer Plan aktiv" in den Rasenmäher übertragen werden.
-ACHTUNG! Die bestehenden Timer im Rasenmäher werden überschrieben!
-```
-Robonect_GetTimer( $Instanz ); // Auslesen der Timer
 ```
 
 #### SetMode( int $Instanz, string $mode )
@@ -115,7 +135,7 @@ Erlaubte Modi sind:
 * man : Wechseln des Modus nach "Manuell"
 * auto : Wechseln des Modus nach "Automatisch"
 
-#### SetMowingNow( int $Instanz, string $duration )
+#### StartMowingNow( int $Instanz, string $duration )
 Startet das Mähen des Rasenmähers für eine angegebene Zeit. Der Rasenmäher fährt anschließend wieder in seine Ladestation.
 ```
 Robonect_StartMowingNow( $Instanz, 90 ); // lässt den Rasenmäher für 90 Minuten mähen
@@ -137,8 +157,14 @@ Ein weiteres Beispiel:
 Robonect_ScheduleJob( $Instanz, 90, '', '', '' ); // entspricht dem Kommando StartMowingNow( $Instanz, 90 )
 ```
 
+#### DriveHome( int $Instanz )
+Fährt den Rasenmäher in seine Ladestation.
+```
+Robonect_DriveHome( $Instanz ); // Fährt den Rasenmäher in seine Ladestation
+```
+
 #### Start( int $Instanz )
-Mit dieser Funktion kann der Rasenmäher wieder gestartet werden (Rückkehr zum letzten Modus), wenn er zuvor gestoppt wurde.
+Mit dieser Funktion kann der Rasenmäher wieder gestartet werden (Rückkehr zum letzten Modus), wenn er zuvor gestoppt wurde!
 ```
 Robonect_Start( $Instanz ); // Starten des Rasenmähers
 ```
@@ -147,6 +173,21 @@ Robonect_Start( $Instanz ); // Starten des Rasenmähers
 Mit dieser Funktion kann der Rasenmäher gestoppt werden.
 ```
 Robonect_Stop( $Instanz ); // Stoppen des Rasenmähers
+```
+
+#### GetTimerFromMower( int $Instanz )
+Mit dieser Funktion können die programmierten Timer des Rasenmähers ausgelesen und der Wochenplan unterhalb der Status-Variable "Timer-Plan aktiv" aktualisert werden.
+Die Methode liefert entweder ein JSON oder FALSE;
+ACHTUNG: Timer im Wochenplan werden gelöscht und neu geschrieben!
+```
+Robonect_GetTimer( $Instanz ); // Auslesen der Timer
+```
+
+#### SetTimerToMower( int $Instanz )
+Mit dieser Funktion können die programmierten Timer des Wochenplans unterhalb der Status-Variable "Timer Plan aktiv" in den Rasenmäher übertragen werden.
+ACHTUNG! Die bestehenden Timer im Rasenmäher werden überschrieben!
+```
+Robonect_GetTimer( $Instanz ); // Auslesen der Timer
 ```
 
 ## 5. Versionshistorie

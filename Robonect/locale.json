@@ -3,11 +3,11 @@
     "de": {
       "Disclaimer": "Dieses Modul wurde unabhängig vom Hersteller des Robonect Moduls entwickelt. Die Benutzung des Moduls erfolgt auf eigene Gefahr unter Ausschluss jeglicher Gewährleistung für Probleme oder Schäden am Robonect Modul.",
 
-      "Login": "Login Daten des Robonect Moduls (benötigt zur Steuerung)",
+      "Login": "Login Daten des Robonect Moduls (benötigt zum Lesen sowie zur Steuerung)",
       "Username": "Benutzername",
       "Password": "Passwort",
 
-      "AutomaticUpdate": "Automatische Updates (nicht benötigt bei MQTT Updates)",
+      "AutomaticUpdate": "Automatische Updates (bei MQTT-Nutzung sollte das Intervall höher sein, aber MQTT liefert nicht alles!)",
       "UpdateTimer": "Update alle",
       "seconds": "Sekunden",
 
@@ -17,6 +17,9 @@
       "DefaultValues": "Vorgabewerte",
       "MowingTime": "Mähzeit bei Sofortstart",
       "minutes": "Minuten",
+
+      "Debugging": "Debugging Tools",
+      "DebugLog": "Debug Logging aktivieren",
 
       "Check Connection": "Verbindung testen",
 
