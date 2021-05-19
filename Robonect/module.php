@@ -578,6 +578,16 @@ class RobonectWifiModul extends IPSModule
                         break;
                 }
                 break;
+            case 'timerTransmitAction':
+                switch( $Value ) {
+                    case 0: // vom Robonect lesen
+                        $this->GetTimerFromMower();
+                        break;
+                    case 1: // zum Robonect übertragen
+                        $this->SetTimerToMower();
+                        break;
+                }
+                break;
         }
     }
 
@@ -834,6 +844,13 @@ class RobonectWifiModul extends IPSModule
             IPS_SetVariableProfileAssociation("ROBONECT_InteractiveMode", 1, "Timer", "Clock", 0xFFFFFF);
         }
 
+        if (!IPS_VariableProfileExists('ROBONECT_TimerTransmitAction')) {
+            IPS_CreateVariableProfile('ROBONECT_TimerTransmitAction', 1);
+            IPS_SetVariableProfileIcon('ROBONECT_TimerTransmitAction', 'TurnRight');
+            IPS_SetVariableProfileAssociation("ROBONECT_TimerTransmitAction", 0, "vom Robonect lesen", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_TimerTransmitAction", 1, "an Robonect übertragen", "", 0xFFFFFF);
+        }
+
         if (!IPS_VariableProfileExists('ROBONECT_Modus')) {
             IPS_CreateVariableProfile('ROBONECT_Modus', 1);
             IPS_SetVariableProfileIcon('ROBONECT_Modus', '');
@@ -961,6 +978,8 @@ class RobonectWifiModul extends IPSModule
         }
 
         $this->RegisterVariableInteger( "mowerNextTimerstart", "nächster Timerstart", "~UnixTimestamp", 92 );
+        $this->RegisterVariableInteger("timerTransmitAction", "Timer lesen/schreiben", "ROBONECT_TimerTransmitAction", 21 );
+        $this->EnableAction("timerTransmitAction");
 
         //--- Clock -------------------------------------------------------------
         $this->RegisterVariableInteger( "mowerUnixTimestamp", "Interner Unix Zeitstempel", "~UnixTimestamp", 110 );
