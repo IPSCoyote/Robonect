@@ -978,7 +978,7 @@ class RobonectWifiModul extends IPSModule
         }
 
         $this->RegisterVariableInteger( "mowerNextTimerstart", "nächster Timerstart", "~UnixTimestamp", 92 );
-        $this->RegisterVariableInteger("timerTransmitAction", "Timer lesen/schreiben", "ROBONECT_TimerTransmitAction", 21 );
+        $this->RegisterVariableInteger("timerTransmitAction", "Timer lesen/schreiben", "ROBONECT_TimerTransmitAction", 93 );
         $this->EnableAction("timerTransmitAction");
 
         //--- Clock -------------------------------------------------------------
