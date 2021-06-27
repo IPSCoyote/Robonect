@@ -91,6 +91,15 @@ class RobonectWifiModul extends IPSModule
             $this->updateIdent("mowerUnixTimestamp", $data['clock']['unix'] );
         }
 
+        // Get Health Data
+        $data = $this->executeHTTPCommand( 'health' );
+        if ($data == false) {
+            return false;
+        } elseif ( isset( $data['successful'] ) ) {#
+            $this->updateIdent("mowerVoltageInternal", $data['health']['voltages']['int3v3']/1000 );
+            $this->updateIdent("mowerVoltageExternal", $data['health']['voltages']['ext3v3'] );
+            $this->updateIdent("mowerVoltageBattery", $data['health']['voltages']['batt']/1000 );
+        }
 
         // Set Timer
         if ( $this->ReadPropertyBoolean( "HTTPUpdateTimer" ) and $this->ReadPropertyInteger("UpdateTimer") >= 10 ) {
