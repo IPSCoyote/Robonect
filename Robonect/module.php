@@ -41,6 +41,13 @@ class RobonectWifiModul extends IPSModule
         $this->registerProfiles();
         $this->registerVariables();
 
+        // Set Timer
+        if ( $this->ReadPropertyBoolean( "HTTPUpdateTimer" ) and $this->ReadPropertyInteger("UpdateTimer") >= 10 ) {
+            $this->SetTimerInterval("ROBONECT_UpdateTimer", $this->ReadPropertyInteger("UpdateTimer")*1000);
+        } else {
+            $this->SetTimerInterval("ROBONECT_UpdateTimer", 0 );
+        }
+
         // Set Data to Variables (and update timer)
         $this->Update();
     }
