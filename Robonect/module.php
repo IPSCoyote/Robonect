@@ -321,7 +321,7 @@ class RobonectWifiModul extends IPSModule
         if ( $this->GetIDForIdent('TimerPlanActive' ) == false ) { return false; }
 
         $TimerPlanActiveID = $this->GetIDForIdent('TimerPlanActive');
-        $WochenplanEventID = IPS_GetObjectIDByIdent( 'TimerWeekPlan'.$this->InstanceID, $TimerPlanActiveID );
+        $WochenplanEventID = @IPS_GetObjectIDByIdent( 'TimerWeekPlan'.$this->InstanceID, $TimerPlanActiveID );
         if ( $WochenplanEventID == false ) { return false; }
 
         // delete and re-create the ScheduleGroups to rebuild them from scratch
@@ -380,7 +380,7 @@ class RobonectWifiModul extends IPSModule
             return false;
         }
         $TimerPlanActiveID = $this->GetIDForIdent('TimerPlanActive');
-        $WochenplanEventID = IPS_GetObjectIDByIdent( 'TimerWeekPlan'.$this->InstanceID, $TimerPlanActiveID );
+        $WochenplanEventID = @IPS_GetObjectIDByIdent( 'TimerWeekPlan'.$this->InstanceID, $TimerPlanActiveID );
         if ( $WochenplanEventID === false ) {
             return;
         }
@@ -986,7 +986,7 @@ class RobonectWifiModul extends IPSModule
         $this->Log( 'InstanzID: '.$this->InstanceID );
 
         // check, if timer Plan Active is already there
-        if ( IPS_GetObjectIDByIdent( 'TimerWeekPlan'.$this->InstanceID, $TimerPlanActiveID ) == false ) {
+        if ( @IPS_GetObjectIDByIdent( 'TimerWeekPlan'.$this->InstanceID, $TimerPlanActiveID ) == false ) {
             $weekPlanID = IPS_CreateEvent(2); // Weekplan
             IPS_SetParent($weekPlanID, $TimerPlanActiveID);
             IPS_SetName($weekPlanID, 'Timer Wochen Plan');
