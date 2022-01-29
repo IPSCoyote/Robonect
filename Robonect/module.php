@@ -48,16 +48,21 @@ class RobonectWifiModul extends IPSModule
             $this->SetTimerInterval("ROBONECT_UpdateTimer", 0 );
         }
 
-        // Set Data to Variables (and update timer)
-        $this->Update();
+        // Set Timer
+        if ( $this->ReadPropertyBoolean( "HTTPUpdateTimer" ) and $this->ReadPropertyInteger("UpdateTimer") >= 10 ) {
+            $this->SetTimerInterval("ROBONECT_UpdateTimer", $this->ReadPropertyInteger("UpdateTimer")*1000);
+        } else {
+            $this->SetTimerInterval("ROBONECT_UpdateTimer", 0 );
+        }
     }
 
 
     public function Update()
     {
-
         $semaphore = 'Robonect'.$this->InstanceID.'_Update';
+        $this->log('Update - Try to enter Semaphore' );
         if ( IPS_SemaphoreEnter( $semaphore, 0 ) == false ) { return false; };
+        $this->log('Update - Semaphore entered' );
 
         // HTTP status request
         $data = $this->executeHTTPCommand( 'status' );
@@ -116,6 +121,7 @@ class RobonectWifiModul extends IPSModule
         }
 
         IPS_SemaphoreLeave( $semaphore );
+        $this->log('Update - Semaphore leaved' );
     }
 
     public function Start() {
@@ -524,6 +530,7 @@ class RobonectWifiModul extends IPSModule
         // HTTP status request
         $URL = 'http://' . $IPAddress . '/json?cmd='.$command;
         try {
+            $this->log('Http Request send' );
             $ch = curl_init();
             curl_setopt_array($ch, [
                 CURLOPT_URL => $URL,
@@ -535,7 +542,9 @@ class RobonectWifiModul extends IPSModule
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             $json = curl_exec($ch);
             curl_close($ch);
+            $this->log('Http Request finished' );
         } catch (Exception $e) {
+            $this->log('Http Request on error' );
             $this->SetStatus(203 ); // no valid IP configured
             return false;
         };
@@ -830,9 +839,9 @@ class RobonectWifiModul extends IPSModule
     }
 
     protected function log( string $text ) {
-        if ( $this->ReadPropertyBoolean("DebugLog") == true ) {
-            $this->LogMessage($text, KL_DEBUG );
-        }
+        if ( $this->ReadPropertyBoolean("DebugLog") ) {
+            $this->SendDebug( "Robonect", $text, 0 );
+        };
     }
 
     protected function registerProfiles()
@@ -965,6 +974,7 @@ class RobonectWifiModul extends IPSModule
         $this->RegisterVariableInteger( "mowerTimerStatus", "Timer Status", "ROBONECT_TimerStatus", 90 );
 
         $TimerPlanActiveID = $this->RegisterVariableBoolean( "TimerPlanActive", "Timer-Plan aktiv", "ROBONECT_JaNein", 91 );
+        $this->Log( 'InstanzID: '.$this->InstanceID, KL_DEBUG );
         // check, if timer Plan Active is already there
         if ( @$this->GetIDForIdent('TimerWeekPlan'.$this->InstanceID) == false ) {
             $weekPlanID = IPS_CreateEvent(2); // Weekplan
