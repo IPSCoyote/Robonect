@@ -312,7 +312,7 @@ class RobonectWifiModul extends IPSModule
 
         if ( $this->GetIDForIdent('TimerPlanActive' ) == false ) { return false; }
 
-        $weekPlanEventID = IPS_GetEventIDByName( 'Timer Wochen Plan', $this->GetIDForIdent('TimerPlanActive' ));
+        $weekPlanEventID = GetIDByIdent('TimerWeekPlan'.$this->InstanceID);
         if ( $weekPlanEventID == false ) { return false; }
 
         // delete and re-create the ScheduleGroups to rebuild them from scratch
@@ -370,7 +370,7 @@ class RobonectWifiModul extends IPSModule
         if ( $TimerPlanActiveID == false ) {
             return false;
         }
-        $WochenplanEventID = @IPS_GetEventIDByName( 'Timer Wochen Plan', $TimerPlanActiveID );
+        $WochenplanEventID = @GetIDByIdent('TimerWeekPlan'.$this->InstanceID);
         if ( $WochenplanEventID === false ) {
             return;
         }
@@ -714,7 +714,7 @@ class RobonectWifiModul extends IPSModule
                 break;
             case 'mowerStatusSinceDurationSec':
                 $statusSinceTimestamp = time() - $payload;
-                IPS_LogMessage('Robonect', 'Duration: '.$payload.' Timestamp: '.$statusSinceTimestamp );
+                $this->LogMessage( 'Duration: '.$payload.' Timestamp: '.$statusSinceTimestamp, KL_DEBUG );
                 SetValue($this->GetIDForIdent("mowerStatusSince"), $statusSinceTimestamp );
                 if (intdiv($payload, 86400) > 0) {
                     $Text = intdiv($payload, 86400) . ' Tag';
@@ -831,7 +831,7 @@ class RobonectWifiModul extends IPSModule
 
     protected function log( string $text ) {
         if ( $this->ReadPropertyBoolean("DebugLog") == true ) {
-            IPS_LogMessage('Robonect', $text );
+            $this->LogMessage($text, KL_DEBUG );
         }
     }
 
@@ -966,10 +966,11 @@ class RobonectWifiModul extends IPSModule
 
         $TimerPlanActiveID = $this->RegisterVariableBoolean( "TimerPlanActive", "Timer-Plan aktiv", "ROBONECT_JaNein", 91 );
         // check, if timer Plan Active is already there
-        if ( @IPS_GetEventIDByName( 'Timer Wochen Plan', $TimerPlanActiveID ) == false ) {
+        if ( @GetIDByIdent('TimerWeekPlan'.$this->InstanceID) == false ) {
             $weekPlanID = IPS_CreateEvent(2); // Weekplan
             IPS_SetParent($weekPlanID, $TimerPlanActiveID);
             IPS_SetName($weekPlanID, 'Timer Wochen Plan');
+            IPS_SetIdent($weekPlanID, 'TimerWeekPlan'.$this->InstanceID);
 
             IPS_SetEventScheduleGroup($weekPlanID, 0, 1);  // Mon
             IPS_SetEventScheduleGroup($weekPlanID, 1, 2);  // Tue
