@@ -67,6 +67,8 @@ class RobonectWifiModul extends IPSModule
         // HTTP status request
         $data = $this->executeHTTPCommand( 'status' );
         if ($data == false) {
+            IPS_SemaphoreLeave( $semaphore );
+            $this->log('Update - Semaphore leaved' );
             return false;
         } elseif ( isset( $data['successful'] ) ) {
             // set values to variables
@@ -511,13 +513,14 @@ class RobonectWifiModul extends IPSModule
         return $success;
     }
 
-    protected function executeHTTPCommand( $command ) {
+    protected function executeHTTPCommand( $command )
+    {
         $IPAddress = trim($this->ReadPropertyString("IPAddress"));
         $Username = trim($this->ReadPropertyString("Username"));
         $Password = trim($this->ReadPropertyString("Password"));
 
         // check if IP is ocnfigured and valid
-        if ( $IPAddress == "0.0.0.0" ) {
+        if ($IPAddress == "0.0.0.0") {
             $this->SetStatus(200); // no configuration done
             return false;
         } elseif (filter_var($IPAddress, FILTER_VALIDATE_IP) == false) {
@@ -525,12 +528,12 @@ class RobonectWifiModul extends IPSModule
             return false;
         }
 
-        if ( $command == '' ) return false;
+        if ($command == '') return false;
 
         // HTTP status request
-        $URL = 'http://' . $IPAddress . '/json?cmd='.$command;
+        $URL = 'http://' . $IPAddress . '/json?cmd=' . $command;
         try {
-            $this->log('Http Request send' );
+            $this->log('Http Request send');
             $ch = curl_init();
             curl_setopt_array($ch, [
                 CURLOPT_URL => $URL,
@@ -542,13 +545,17 @@ class RobonectWifiModul extends IPSModule
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             $json = curl_exec($ch);
             curl_close($ch);
-            $this->log('Http Request finished' );
+            $this->log('Http Request finished');
         } catch (Exception $e) {
-            $this->log('Http Request on error' );
-            $this->SetStatus(203 ); // no valid IP configured
+            $this->log('Http Request on error');
+            $this->SetStatus(203); // no valid IP configured
             return false;
         };
-        $this->SetStatus(102 ); // Robonect found
+        if (strlen($json) > 3) {
+          $this->SetStatus(102); // Robonect found
+        } else {
+          $this->SetStatus(202); // No Device at IP
+        }
         return json_decode( $json, true );
     }
 
