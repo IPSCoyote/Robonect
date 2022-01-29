@@ -983,10 +983,9 @@ class RobonectWifiModul extends IPSModule
         $TimerPlanActiveID = $this->RegisterVariableBoolean( "TimerPlanActive", "Timer-Plan aktiv", "ROBONECT_JaNein", 91 );
         $this->Log( 'InstanzID: '.$this->InstanceID );
         $WeekPlanIdentName = 'TimerWeekPlan'.$this->InstanceID;
-        $this->Log( 'WeekPlan IdentInstanzID: '.$WeekPlanIdentName );
         // check, if timer Plan Active is already there
-        //@$this->GetIDForIdent($WeekPlanIdentName)
-        if ( IPS_GetObjectIDByIdent( $WeekPlanIdentName, $TimerPlanActiveID ) == false ) {
+        //IPS_GetObjectIDByIdent( $WeekPlanIdentName, $TimerPlanActiveID )
+        if ( $this->GetIDForIdent($WeekPlanIdentName) == false ) {
             $weekPlanID = IPS_CreateEvent(2); // Weekplan
             IPS_SetParent($weekPlanID, $TimerPlanActiveID);
             IPS_SetName($weekPlanID, 'Timer Wochen Plan');
