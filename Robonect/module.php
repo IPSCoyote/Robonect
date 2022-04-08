@@ -92,6 +92,9 @@ class RobonectWifiModul extends IPSModule
             $this->updateIdent("mowerHours", $data['status']['hours'] );
             $this->updateIdent("mowerTemperature", $data['health']['temperature'] );
             $this->updateIdent("mowerHumidity", $data['health']['humidity']);
+            $this->updateIdent("mowerBladesQuality", $data['blades']['quality']);
+            $this->updateIdent("mowerBladesOperatingHours", $data['blades']['hours']);
+            $this->updateIdent("mowerBladesAge", $data['blades']['days']);
 
             //--- Timer
             $this->updateIdent("mowerTimerStatus", $data['timer']['status']);
@@ -647,6 +650,9 @@ class RobonectWifiModul extends IPSModule
         $topicList['/mqtt']['Ident']                        = 'mowerMqttStatus';
         $topicList['/health/climate/temperature']['Ident']  = 'mowerTemperature';
         $topicList['/health/climate/humidity']['Ident']     = 'mowerHumidity';
+        $topicList['mower/blades/quality']['Ident']         = 'mowerBladesQuality';
+        $topicList['mower/blades/hours']['Ident']           = 'mowerBladesOperatingHours';
+        $topicList['mower/blades/days']['Ident']            = 'mowerBladesAge';
 
         $topicList['/Timer/next/unix']['Ident']             = 'mowerNextTimerstart';
 
@@ -818,6 +824,15 @@ class RobonectWifiModul extends IPSModule
             case 'mowerHumidity':
                 SetValue($this->GetIDForIdent("mowerHumidity" ), $payload );
                 break;
+            case 'mowerBladesQuality':
+                SetValue($this->GetIDForIdent("mowerBladesQuality" ), $payload );
+                break;
+            case 'mowerBladesOperatingHours':
+                SetValue($this->GetIDForIdent("mowerBladesOperatingHours" ), $payload );
+                break;
+            case 'mowerBladesAge':
+                SetValue($this->GetIDForIdent("mowerBladesAge" ), $payload );
+                break;
 
 
             case 'mowerTimerStatus':
@@ -930,6 +945,13 @@ class RobonectWifiModul extends IPSModule
             IPS_SetVariableProfileIcon('ROBONECT_Stunden', 'Clock' );
             IPS_SetVariableProfileText('ROBONECT_Stunden', "", " h" );
         }
+        
+        if ( !IPS_VariableProfileExists('ROBONECT_Tage') ) {
+            IPS_CreateVariableProfile('ROBONECT_Tage', 1 );
+            IPS_SetVariableProfileDigits('ROBONECT_Tage', 0 );
+            IPS_SetVariableProfileIcon('ROBONECT_Tage', 'Clock' );
+            IPS_SetVariableProfileText('ROBONECT_Tage', "", " d" );
+        }
 
         if ( !IPS_VariableProfileExists('ROBONECT_Spannung') ) {
             IPS_CreateVariableProfile('ROBONECT_Spannung', 2 );
@@ -973,7 +995,10 @@ class RobonectWifiModul extends IPSModule
         $this->RegisterVariableInteger( "mowerWlanStatus", "WLAN Signalstärke", "~Intensity.100", 55 );
         $this->RegisterVariableInteger( "mowerMqttStatus", "MQTT Status", "ROBONECT_MQTTStatus", 56 );
         $this->RegisterVariableFloat( "mowerTemperature", "Temperatur im Rasenmäher", "~Temperature", 57 );
-        $this->RegisterVariableInteger( "mowerHumidity", "Feuchtigkeit im Rasenmäher",  "~Humidity", 58 );
+        $this->RegisterVariableInteger( "mowerHumidity", "Feuchtigkeit im Rasenmäher", "~Humidity", 58 );
+        $this->RegisterVariableInteger( "mowerBladesQuality", "Qualität der Messer", "~Intensity.100", 59 );
+        $this->RegisterVariableInteger( "mowerBladesOperatingHours", "Betriebsstunden der Messer", "ROBONECT_Stunden", 60 );
+        $this->RegisterVariableInteger( "mowerBladesAge", "Alter der Messer", "ROBONECT_Tage", 61 );
 
         //--- Error List --------------------------------------------------------------
         $this->RegisterVariableInteger( "mowerErrorCount", "Anzahl Fehlermeldungen", "", 70 );
