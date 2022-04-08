@@ -92,9 +92,15 @@ class RobonectWifiModul extends IPSModule
             $this->updateIdent("mowerHours", $data['status']['hours'] );
             $this->updateIdent("mowerTemperature", $data['health']['temperature'] );
             $this->updateIdent("mowerHumidity", $data['health']['humidity']);
-            $this->updateIdent("mowerBladesQuality", $data['blades']['quality']);
-            $this->updateIdent("mowerBladesOperatingHours", $data['blades']['hours']);
-            $this->updateIdent("mowerBladesAge", $data['blades']['days']);
+            if (isset($data['blades']['quality'])) {
+                $this->updateIdent("mowerBladesQuality", $data['blades']['quality']);
+            }
+            if (isset($data['blades']['hours'])) {
+                $this->updateIdent("mowerBladesOperatingHours", $data['blades']['hours']);
+            }
+            if (isset($data['blades']['days'])) {
+                $this->updateIdent("mowerBladesAge", $data['blades']['days']);
+            }
 
             //--- Timer
             $this->updateIdent("mowerTimerStatus", $data['timer']['status']);
