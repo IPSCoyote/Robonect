@@ -743,24 +743,26 @@ class RobonectWifiModul extends IPSModule
                 }
                 break;
             case 'mowerStatusSinceDurationSec':
-                $statusSinceTimestamp = time() - $payload;
-                $this->LogMessage( 'Duration: '.$payload.' Timestamp: '.$statusSinceTimestamp, KL_DEBUG );
+                $durationSince = 0+filter_var($payload, FILTER_SANITIZE_NUMBER_INT);
+                $statusSinceTimestamp = time() - $durationSince;
+                $this->LogMessage( 'Duration: '.$durationSince.' Timestamp: '.$statusSinceTimestamp, KL_DEBUG );
                 $this->SetValue("mowerStatusSince", $statusSinceTimestamp );
-                if (intdiv($payload, 86400) > 0) {
-                    $Text = intdiv($payload, 86400) . ' Tag';
-                    if (intdiv($payload, 86400) > 1) $Text = $Text . 'en';
+                if (intdiv($durationSince, 86400) > 0) {
+                    $Text = intdiv($durationSince, 86400) . ' Tag';
+                    if (intdiv($durationSince, 86400) > 1) $Text = $Text . 'en';
                 } else {
                     $Text = "";
-                    if (intdiv($payload, 3600) > 0) $Text = intdiv($payload, 3600) . " Stunden ";
-                    $Text = $Text . date("i", $payload) . " Minuten";
+                    if (intdiv($durationSince, 3600) > 0) $Text = intdiv($durationSince, 3600) . " Stunden ";
+                    $Text = $Text . date("i", $durationSince) . " Minuten";
                 }
                 $this->SetValue("statusSinceDescriptive", $Text);
                 break;
             case 'mowerStatusSinceDurationMin':
-                $statusSinceTimestamp = time() - $payload*60; // substract seconds
-                $this->log('Duration: '.$payload.' Timestamp: '.$statusSinceTimestamp );
+                $durationSince = 0+filter_var($payload, FILTER_SANITIZE_NUMBER_INT);
+                $statusSinceTimestamp = time() - $durationSince*60; // substract seconds
+                $this->log('Duration: '.$durationSince.' Timestamp: '.$statusSinceTimestamp );
                 $this->SetValue("mowerStatusSince", $statusSinceTimestamp );
-                $duration = $payload*60;
+                $duration = $durationSince*60;
                 if (intdiv($duration, 86400) > 0) {
                     $Text = intdiv($duration, 86400) . ' Tag';
                     if (intdiv($duration, 86400) > 1) $Text = $Text . 'en';
@@ -805,14 +807,13 @@ class RobonectWifiModul extends IPSModule
                 break;
             case 'mowerWlanStatus':
                 $WLANIntensity = 100;
-                $WLANmDB = $payload;
+                $WLANmDB = 0+filter_var($payload, FILTER_SANITIZE_NUMBER_INT);
                 if (abs($WLANmDB) >= 95) {
                     $WLANIntensity = 0;
                 } else {
                     $WLANIntensity = min(max(round(((95 - abs($WLANmDB)) / 60) * 100, 0), 0), 100);
                 }
                 $this->SetValue("mowerWlanStatus", $WLANIntensity);
-                break;
                 break;
             case 'mowerMqttStatus':
                 switch ( $payload ) {
