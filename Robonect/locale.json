@@ -2,6 +2,7 @@
   "translations": {
     "de": {
       "Disclaimer": "Dieses Modul wurde unabhängig vom Hersteller des Robonect Moduls entwickelt. Die Benutzung des Moduls erfolgt auf eigene Gefahr unter Ausschluss jeglicher Gewährleistung für Probleme oder Schäden am Robonect Modul.",
+      "Donation": "Das Modul ist ein Hobby. Wer sich mit einer kleinen Spende für dessen Entwicklung (ohne Recht auf irgendwelche Ansprüche) bedanken möchte, kann dies gerne via Paypal-Spende machen:",
 
       "Login": "Login Daten des Robonect Moduls (benötigt zum Lesen sowie zur Steuerung)",
       "Username": "Benutzername",
