@@ -117,6 +117,8 @@ class RobonectWifiModul extends IPSModule
         // Get Health Data
         $data = $this->executeHTTPCommand( 'health' );
         if ($data == false) {
+            IPS_SemaphoreLeave( $semaphore );
+            $this->log('Update - Semaphore leaved' );
             return false;
         } elseif ( isset( $data['successful'] ) ) {#
             $this->updateIdent("mowerVoltageInternal", $data['health']['voltages']['int3v3']/1000 );
