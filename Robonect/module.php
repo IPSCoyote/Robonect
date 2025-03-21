@@ -647,7 +647,7 @@ class RobonectWifiModul extends IPSModule
         $topicList['/mower/stopped']['Ident']               = 'mowerStopped';
         $topicList['/mower/status/duration']['Ident']       = 'mowerStatusSinceDurationMin';
 
-        $topicList['mower/battery/charge']['Ident']         = 'mowerBatterySoc';
+        $topicList['/mower/battery/charge']['Ident']         = 'mowerBatterySoc';
         $topicList['/health/voltage/batt']['Ident']         = 'mowerVoltageBattery';
         $topicList['/health/voltage/int33']['Ident']        = 'mowerVoltageInternal';
         $topicList['/health/voltage/ext33']['Ident']        = 'mowerVoltageExternal';
@@ -656,9 +656,9 @@ class RobonectWifiModul extends IPSModule
         $topicList['/mqtt']['Ident']                        = 'mowerMqttStatus';
         $topicList['/health/climate/temperature']['Ident']  = 'mowerTemperature';
         $topicList['/health/climate/humidity']['Ident']     = 'mowerHumidity';
-        $topicList['mower/blades/quality']['Ident']         = 'mowerBladesQuality';
-        $topicList['mower/blades/hours']['Ident']           = 'mowerBladesOperatingHours';
-        $topicList['mower/blades/days']['Ident']            = 'mowerBladesAge';
+        $topicList['/mower/blades/quality']['Ident']         = 'mowerBladesQuality';
+        $topicList['/mower/blades/hours']['Ident']           = 'mowerBladesOperatingHours';
+        $topicList['/mower/blades/days']['Ident']            = 'mowerBladesAge';
 
         $topicList['/Timer/next/unix']['Ident']             = 'mowerNextTimerstart';
 
@@ -697,7 +697,7 @@ class RobonectWifiModul extends IPSModule
                 $this->SetValue("mowerMqttStatus", 1); // online
             }
         } else {
-            $this->log('Unkown Topic: '.$topic. ', Payload: '.$payload );
+            $this->log('Unknown Topic: '.$topic. ', Payload: '.$payload );
         }
 
     }
