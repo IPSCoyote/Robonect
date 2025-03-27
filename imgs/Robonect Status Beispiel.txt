@@ -1,0 +1,42 @@
+Robonect
+
+{
+	"name": "Mein Automower", 
+	"id": "10B0D1", 
+	"status": {
+		"status": 17, 
+		"distance": 0, 
+		"stopped": false, 
+		"duration": 224932, 
+		"mode": 0, "battery": 100, 
+		"hours": 2118
+	}, 
+	"timer": {
+		"status": 2, 
+		"next": {
+			"date": "2025-03-28", 
+			"time": "13:00:00", 
+			"unix": 1743166800
+		}
+	}, 
+	"wlan": {
+		"signal": -84
+	}, 
+	"health": {
+		"temperature": 17, 
+		"humidity": 32
+	}, 
+	"error": {
+		"error_code": 1, 
+		"error_message": "Mein Automower hat Arbeitsbereich überschritten", 
+		"date": "2024-11-11", 
+		"time": "16:30:59", 
+		"unix": 1731342659
+	}, 
+	"clock": {
+		"date": "2025-03-27", 
+		"time": "06:54:29", 
+		"unix": 1743058469
+	}, 
+	"successful": true
+}

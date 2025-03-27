@@ -74,24 +74,24 @@ class RobonectWifiModul extends IPSModule
             // set values to variables
 
             //--- Identification
-            $this->updateIdent( "mowerName", $data['name'] );
-            $this->updateIdent( "mowerSerial", $data['id'] );
+            if (isset($data['name']) ) $this->updateIdent( "mowerName", $data['name'] );
+            if (isset($data['id']) ) $this->updateIdent( "mowerSerial", $data['id'] );
 
             //--- Network
-            $this->updateIdent( "mowerWlanStatus", $data['wlan']['signal'] );
+            if (isset($data['wlan']['signal']) ) $this->updateIdent( "mowerWlanStatus", $data['wlan']['signal'] );
 
             //--- Status
-            $this->updateIdent( "mowerMode", $data['status']['mode'] );
-            $this->updateIdent( "mowerStatus", $data['status']['status'] );
-            $this->updateIdent( "mowerStopped", $data['status']['stopped'] );
-            $this->updateIdent( "mowerStatusSinceDurationSec", $data['status']['duration'] );
-            $this->updateIdent( "mowerMode",  $data['status']['mode'] );
+            if (isset($data['status']['mode']) ) $this->updateIdent( "mowerMode", $data['status']['mode'] );
+            if (isset($data['status']['status']) ) $this->updateIdent( "mowerStatus", $data['status']['status'] );
+            if (isset($data['status']['stopped']) ) $this->updateIdent( "mowerStopped", $data['status']['stopped'] );
+            if (isset($data['status']['duration']) ) $this->updateIdent( "mowerStatusSinceDurationSec", $data['status']['duration'] );
+            if (isset($data['status']['mode']) ) $this->updateIdent( "mowerMode",  $data['status']['mode'] );
 
             //--- Condition
-            $this->updateIdent("mowerBatterySoc", $data['status']['battery'] );
-            $this->updateIdent("mowerHours", $data['status']['hours'] );
-            $this->updateIdent("mowerTemperature", $data['health']['temperature'] );
-            $this->updateIdent("mowerHumidity", $data['health']['humidity']);
+            if (isset($data['status']['battery']) ) $this->updateIdent("mowerBatterySoc", $data['status']['battery'] );
+            if (isset($data['status']['hours']) ) $this->updateIdent("mowerHours", $data['status']['hours'] );
+            if (isset($data['health']['temperature']) ) $this->updateIdent("mowerTemperature", $data['health']['temperature'] );
+            if (isset($data['health']['humidity']) ) $this->updateIdent("mowerHumidity", $data['health']['humidity']);
             if (isset($data['blades']['quality'])) {
                 $this->updateIdent("mowerBladesQuality", $data['blades']['quality']);
             }
@@ -103,15 +103,15 @@ class RobonectWifiModul extends IPSModule
             }
 
             //--- Timer
-            $this->updateIdent("mowerTimerStatus", $data['timer']['status']);
+            if (isset($data['timer']['status']) ) $this->updateIdent("mowerTimerStatus", $data['timer']['status']);
             if ( isset( $data['timer']['next'] ) ) {
-                $this->updateIdent("mowerNextTimerstart", $data['timer']['next']['unix'] );
+                if (isset($data['timer']['next']['unix'])) $this->updateIdent("mowerNextTimerstart", $data['timer']['next']['unix'] );
             } else {
                 $this->updateIdent("mowerNextTimerstart", 0 );
             }
 
             //--- Clock
-            $this->updateIdent("mowerUnixTimestamp", $data['clock']['unix'] );
+            if (isset($data['clock']['unix'])) $this->updateIdent("mowerUnixTimestamp", $data['clock']['unix'] );
         }
 
         // Get Health Data
@@ -121,9 +121,9 @@ class RobonectWifiModul extends IPSModule
             $this->log('Update - Semaphore leaved' );
             return false;
         } elseif ( isset( $data['successful'] ) ) {#
-            $this->updateIdent("mowerVoltageInternal", $data['health']['voltages']['int3v3']/1000 );
-            $this->updateIdent("mowerVoltageExternal", $data['health']['voltages']['ext3v3'] );
-            $this->updateIdent("mowerVoltageBattery", $data['health']['voltages']['batt']/1000 );
+            if (isset($data['health']['voltages']['int3v3'])) $this->updateIdent("mowerVoltageInternal", $data['health']['voltages']['int3v3']/1000 );
+            if (isset($data['health']['voltages']['ext3v3'])) $this->updateIdent("mowerVoltageExternal", $data['health']['voltages']['ext3v3'] );
+            if (isset($data['health']['voltages']['batt'])) $this->updateIdent("mowerVoltageBattery", $data['health']['voltages']['batt']/1000 );
         }
 
         // Set Timer
