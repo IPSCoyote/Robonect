@@ -79,34 +79,34 @@ Im Folgenden werden die verfügbaren Statusvariablen mit ihren Eigenschaften, We
 - RW = **R**ead **W**rite enabled<br>
 - WF = **W**eb**f**rond change enabled (die Variablen können zwecks Anzeige natürlich alle ins Webfront eingebunden werden)
 
-Name | Type | Optionen | Werte | Funktionen
-:--- | :---: |  :---:  | :---  | :---:
-`Name` | String | RO | Name des Rasenmähers (lt. Einstellung) |
-`Seriennummer` | String | RO | Seriennummer des Rasenmähers |
-`Modus` | Integer | WF | Bedienbarer Modus im Webfront! (manuell oder Timer) |
-`Aktion` | Integer | WF | Bedienbare Aktion im Webfront! ('jetzt mähen', 'pause', 'mähen beenden') |
-`Modus` | Integer | RW | Aktueller Modus des Rasenmähers | Kann über diverse Methoden (ggf. indirekt) gesetzt werden
-`Status` | Integer | RO | aktueller Status des Rasenmähers |
-`Status (Klartext)` | String | RO | aktueller Status des Rasenmähers, geliefert vom Rasenmäher! (MQTT) |
-`Substatus` | Integer | RO | aktueller Substatus des Rasenmähers (MQTT) |
-`Substatus (Klartext)` | String | RO | aktueller Substatus des Rasenmähers, geliefert vom Rasenmäher! (MQTT) |
-`man. angehalten` | Boolean | RW | Angabe, ob der Rasenmäher manuell angehalten wurde | Kann u.a. über die [Start](#start-int-instanz-) / [Stop](#stop-int-instanz-) beeinflusst werden 
-`Status seit` | Integer | RO | Seit wann gilt der aktuelle Status als TimeStamp.<br>Während des Mähens ist der Wert verlässlich. Ansonsten kann er durch das "Schlafen" des Mähers falsch sein!  |
-`Statisu seit` | String | RO | Seit wann gilt der aktuelle Status als String.<br>Während des Mähens ist der Wert verlässlich. Ansonsten kann er durch das "Schlafen" des Mähers falsch sein!  |
-`Akkustand` | Integer | RO | SoC der Batterie |
-`Akku-Spannung` | Float | RO | Spannung der Batterie (MQTT) |
-`Interne Spannung` | Float | RO | Interne Spannung (MQTT) |
-`Externe Spannung` | Float | RO | Externe Spannung (MQTT) |
-`Arbeitsstunden` | Integer | RO | Arbeitsstunden des Rasenmähers |
-`WLAN Signalstärke` | Integer | RO | Signalstärke des WLAN |
-`Temperatur im Rasenmäher` | Integer | RO | Temperatur im Innern des Rasenmähers |
-`Feuchtigkeit im Rasenmäher` | Integer | RO | Feuchtigkeit im Innern des Rasenmähers |
-`Anzahl Fehlermeldungen` | Integer | RO | Anzahl der Fehlermeldungen im Fehlerspeicher.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlist-int-instanz-) aktualisiert werden.
-`Fehlermeldungen` | String | RO | Fehlermeldungen im Fehlerspeicher als HTML-Tabelle.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlist-int-instanz-) aktualisiert werden.
-`Timer Status` | Integer | RW | Status des Timers | Kann über die Moduswahl beeinflusst werden.
-`Timer-Plan aktiv` | Boolean | RO | Ist ein interner Timer des Rasenmähers aktiv?<br>Unter der Variable befindet sich ein Wochenplan, der die Timer-Definitionen im Rasenmäher darstellt. Er kann in beide Richtungen übertragen werden!<br>ACHTUNG: Der Wochenplan muss(!) "Timer Wochen Plan" heißen. Ansonsten würde ein neuer Plan angelegt! | Der unterliegende Wochenplan kann über die Funktion [GetTimerFromMower](#gettimerfrommower-int-instanz-) aus dem Rasenmäher aktualisiert werden.<br>Mit der Funktion [SetTimerToMower](#settimertomower-int-instanz-) kann er in den Rasenmäher übertragen werden.
-`nächster Timerstart | Integer | RO | UNIX Zeitstempel des nächsten Timerstarts lt. Rasenmäher
-`Interner Unix Zeitstempel` | Integer | RO | Zeitstempel der internen Uhr des Rasenmähers |
+|Name                         | Type | Optionen | Werte | Funktionen |
+|:-----------------------------| :---: |  :---:  | :---  | :---: |
+|`Name`                       | String | RO | Name des Rasenmähers (lt. Einstellung) |
+|`Seriennummer`               | String | RO | Seriennummer des Rasenmähers |
+|`Modus`                      | Integer | WF | Bedienbarer Modus im Webfront! (manuell oder Timer) |
+|`Aktion`                     | Integer | WF | Bedienbare Aktion im Webfront! ('jetzt mähen', 'pause', 'mähen beenden') |
+|`Modus`                      | Integer | RW | Aktueller Modus des Rasenmähers | Kann über diverse Methoden (ggf. indirekt) gesetzt werden |
+|`Status`                     | Integer | RO | aktueller Status des Rasenmähers |
+|`Status (Klartext)`          | String | RO | aktueller Status des Rasenmähers, geliefert vom Rasenmäher! (MQTT) |
+|`Substatus`                  | Integer | RO | aktueller Substatus des Rasenmähers (MQTT) |
+|`Substatus (Klartext)`       | String | RO | aktueller Substatus des Rasenmähers, geliefert vom Rasenmäher! (MQTT) |
+|`man. angehalten`            | Boolean | RW | Angabe, ob der Rasenmäher manuell angehalten wurde | Kann u.a. über die [Start](#start-int-instanz-) / [Stop](#stop-int-instanz-) beeinflusst werden |
+|`Status seit`                | Integer | RO | Seit wann gilt der aktuelle Status als TimeStamp.<br>Während des Mähens ist der Wert verlässlich. Ansonsten kann er durch das "Schlafen" des Mähers falsch sein!  |
+|`Statisu seit`               | String | RO | Seit wann gilt der aktuelle Status als String.<br>Während des Mähens ist der Wert verlässlich. Ansonsten kann er durch das "Schlafen" des Mähers falsch sein!  |
+|`Akkustand`                  | Integer | RO | SoC der Batterie |
+|`Akku-Spannung`              | Float | RO | Spannung der Batterie (MQTT) |
+|`Interne Spannung`           | Float | RO | Interne Spannung (MQTT) |
+|`Externe Spannung`           | Float | RO | Externe Spannung (MQTT) |
+|`Arbeitsstunden`             | Integer | RO | Arbeitsstunden des Rasenmähers |
+|`WLAN Signalstärke`          | Integer | RO | Signalstärke des WLAN |
+|`Temperatur im Rasenmäher`   | Integer | RO | Temperatur im Innern des Rasenmähers |
+|`Feuchtigkeit im Rasenmäher` | Integer | RO | Feuchtigkeit im Innern des Rasenmähers |
+|`Anzahl Fehlermeldungen`     | Integer | RO | Anzahl der Fehlermeldungen im Fehlerspeicher.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlist-int-instanz-) aktualisiert werden. |
+|`Fehlermeldungen`            | String | RO | Fehlermeldungen im Fehlerspeicher als HTML-Tabelle.<br>Leider etwas unzuverlässig, da das Robonect-Modul nicht verlässlich die Daten liefert.  | Kann über [UpdateErrorList](#updateerrorlist-int-instanz-) aktualisiert werden. |
+|`Timer Status`             | Integer | RW | Status des Timers | Kann über die Moduswahl beeinflusst werden. |
+|`Timer-Plan aktiv`           | Boolean | RO | Ist ein interner Timer des Rasenmähers aktiv?<br>Unter der Variable befindet sich ein Wochenplan, der die Timer-Definitionen im Rasenmäher darstellt. Er kann in beide Richtungen übertragen werden!<br>ACHTUNG: Der Wochenplan muss(!) "Timer Wochen Plan" heißen. Ansonsten würde ein neuer Plan angelegt! | Der unterliegende Wochenplan kann über die Funktion [GetTimerFromMower](#gettimerfrommower-int-instanz-) aus dem Rasenmäher aktualisiert werden.<br>Mit der Funktion [SetTimerToMower](#settimertomower-int-instanz-) kann er in den Rasenmäher übertragen werden. |
+|`nächster Timerstart         | Integer | RO | UNIX Zeitstempel des nächsten Timerstarts lt. Rasenmäher |
+|`Interner Unix Zeitstempel`  | Integer | RO | Zeitstempel der internen Uhr des Rasenmähers |
 
 #### 4.1.2. Funktionen
 
@@ -196,6 +196,6 @@ Robonect_GetTimer( $Instanz ); // Auslesen der Timer
 
 ## 5. Versionshistorie
 
-### Version 1.0.1
+### Version 1.0.1 / .2 / .3 / .4
 Kleinere Fehlerbehebungen
 
