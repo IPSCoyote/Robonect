@@ -774,7 +774,7 @@ class RobonectWifiModul extends IPSModule
                     $this->SetValue("mowerSubstatus", $payload);
                     break;
                 case 'mowerSubstatusPlain':
-                    $this->SetValue("mowerSubstatuPlain", $payload);
+                    $this->SetValue(„mowerSubstatusPlain“, $payload);
                     break;
                 case 'mowerStopped':
                     $this->SetValue("mowerStopped", $payload);
@@ -1033,9 +1033,9 @@ class RobonectWifiModul extends IPSModule
         //--- Status -------------------------------------------------------------
         $this->RegisterVariableInteger("mowerMode", "Modus", "ROBONECT_Modus", 30);
         $this->RegisterVariableInteger("mowerStatus", "Status", "ROBONECT_Status", 31);
-        $this->RegisterVariableInteger("mowerStatusPlain", "Status (Klartext)", "ROBONECT_Status", 32);
+        $this->RegisterVariableString("mowerStatusPlain", "Status (Klartext)", "ROBONECT_Status", 32);
         $this->RegisterVariableInteger("mowerSubstatus", "Substatus", "", 33);
-        $this->RegisterVariableInteger("mowerSubstatusPlain", "Substatus (Klartext)", "", 34);
+        $this->RegisterVariableString("mowerSubstatusPlain", "Substatus (Klartext)", "", 34);
         $this->RegisterVariableBoolean("mowerStopped", "man. angehalten", "ROBONECT_JaNein", 35);
         $this->RegisterVariableInteger("mowerStatusSince", "Status seit", "~UnixTimestamp", 36);
         $this->RegisterVariableString("statusSinceDescriptive", "Status seit", "", 37);
