@@ -1033,7 +1033,7 @@ class RobonectWifiModul extends IPSModule
         //--- Status -------------------------------------------------------------
         $this->RegisterVariableInteger("mowerMode", "Modus", "ROBONECT_Modus", 30);
         $this->RegisterVariableInteger("mowerStatus", "Status", "ROBONECT_Status", 31);
-        $this->RegisterVariableString("mowerStatusPlain", "Status (Klartext)", "ROBONECT_Status", 32);
+        $this->RegisterVariableString("mowerStatusPlain", "Status (Klartext)", "", 32);
         $this->RegisterVariableInteger("mowerSubstatus", "Substatus", "", 33);
         $this->RegisterVariableString("mowerSubstatusPlain", "Substatus (Klartext)", "", 34);
         $this->RegisterVariableBoolean("mowerStopped", "man. angehalten", "ROBONECT_JaNein", 35);
