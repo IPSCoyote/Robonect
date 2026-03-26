@@ -721,14 +721,39 @@ class RobonectWifiModul extends IPSModule
         if (strpos($jsonData['Buffer'], $mqttTopic . '/') === false) {
             return true;
         }
-        // String in Topic und Payload zerlegen
-        $nachrichtenlaenge = ord($jsonData['Buffer'][1]);
-        $topiclaenge = ord($jsonData['Buffer'][3]);
-        $payloadlaenge = $nachrichtenlaenge - $topiclaenge - 2; // 2 = Füllbyte + Topiclaenge
-        $startOfTopic = strpos($jsonData['Buffer'], $mqttTopic);
 
-        $topic = substr($jsonData['Buffer'], $startOfTopic + strlen($mqttTopic), $topiclaenge - strlen($mqttTopic));
-        $payload = substr($jsonData['Buffer'], $startOfTopic + $topiclaenge, $payloadlaenge);
+        // String in Topic und Payload zerlegen
+        $buffer = $jsonData['Buffer'];
+        $qos = (ord($buffer[0]) >> 1) & 0x03;
+        $pos = 1;
+        do {
+            $encodedByte = ord($buffer[$pos++]);
+        } while (($encodedByte & 128) != 0);
+        $topicLength = (ord($buffer[$pos]) << 8) + ord($buffer[$pos + 1]);
+        $pos += 2;
+        $fullTopic = substr($buffer, $pos, $topicLength);
+        $pos += $topicLength + ($qos > 0 ? 2 : 0);
+        $payload = substr($buffer, $pos);
+        if (($nextTopicPos = strpos($payload, $mqttTopic . '/')) !== false) {
+            $payload = substr($payload, 0, $nextTopicPos);
+        }
+        $payload = trim(preg_replace('/[\x00-\x1F\x7F]+$/', '', $payload));
+        if (strpos($fullTopic, $mqttTopic) !== 0) {
+            return true;
+        }
+        $topic = substr($fullTopic, strlen($mqttTopic));
+        $payload = str_replace(
+            ['Ã¤', 'Ã¶', 'Ã¼', 'Ã„', 'Ã–', 'Ãœ', 'ÃŸ'],
+            ['ä',  'ö',  'ü',  'Ä',  'Ö',  'Ü',  'ß'],
+            $payload
+        );
+        // Steuerzeichen entfernen
+        $payload = preg_replace('/[\x00-\x1F\x7F]+/u', '', $payload);
+        $payload = trim($payload);
+        // Wenn ein Prozentwert in Klammern vorhanden ist, exakt bis dort übernehmen
+        if (preg_match('/^(.+\(\d{1,3}\s?%\))/u', $payload, $matches)) {
+            $payload = $matches[1];
+        }
 
         $this->log('Topic: ' . $topic . ', Payload: ' . $payload);
 
@@ -774,7 +799,7 @@ class RobonectWifiModul extends IPSModule
                     $this->SetValue("mowerSubstatus", $payload);
                     break;
                 case 'mowerSubstatusPlain':
-                    $this->SetValue(„mowerSubstatusPlain“, $payload);
+                    $this->SetValue("mowerSubstatusPlain", $payload);
                     break;
                 case 'mowerStopped':
                     $this->SetValue("mowerStopped", $payload);
