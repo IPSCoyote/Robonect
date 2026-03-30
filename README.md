@@ -196,6 +196,9 @@ Robonect_GetTimer( $Instanz ); // Auslesen der Timer
 
 ## 5. Versionshistorie
 
+### Version 1.1
+Fehlerbehubungen und Erweiterung um GPS Daten
+
 ### Version 1.0.1 / .2 / .3 / .4
 Kleinere Fehlerbehebungen
 
