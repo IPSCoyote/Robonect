@@ -129,6 +129,17 @@ class RobonectWifiModul extends IPSModule
             if (isset($data['health']['voltages']['batt'])) $this->updateIdent("mowerVoltageBattery", $data['health']['voltages']['batt'] / 1000);
         }
 
+        // Get GPS Data
+        $data = $this->executeHTTPCommand('gps');
+        if ($data !== false && isset($data['successful']) && $data['successful']) {
+            if (isset($data['gps']['latitude'])) {
+                $this->updateIdent("mowerGpsLatitudeRaw", $data['gps']['latitude']);
+            }
+            if (isset($data['gps']['longitude'])) {
+                $this->updateIdent("mowerGpsLongitudeRaw", $data['gps']['longitude']);
+            }
+        }
+
         // Set Timer
         if ($this->ReadPropertyBoolean("HTTPUpdateTimer") and $this->ReadPropertyInteger("UpdateTimer") >= 10) {
             $this->SetTimerInterval("ROBONECT_UpdateTimer", $this->ReadPropertyInteger("UpdateTimer") * 1000);
@@ -704,6 +715,9 @@ class RobonectWifiModul extends IPSModule
 
         $topicList['/Timer/next/unix']['Ident'] = 'mowerNextTimerstart';
 
+        $topicList['/gps/latitude']['Ident'] = 'mowerGpsLatitudeRaw';
+        $topicList['/gps/longitude']['Ident'] = 'mowerGpsLongitudeRaw';
+
         if ($JSONString == '') {
             $this->log('No JSON');
             return true;
@@ -743,8 +757,8 @@ class RobonectWifiModul extends IPSModule
         }
         $topic = substr($fullTopic, strlen($mqttTopic));
         $payload = str_replace(
-            ['Ã¤', 'Ã¶', 'Ã¼', 'Ã„', 'Ã–', 'Ãœ', 'ÃŸ'],
-            ['ä',  'ö',  'ü',  'Ä',  'Ö',  'Ü',  'ß'],
+            ['Ã¤', 'Ã¶', 'Ã¼', 'Ã„', 'Ã–', 'Ãœ', 'ÃŸ', 'Â°'],
+            ['ä',  'ö',  'ü',  'Ä',  'Ö',  'Ü',  'ß',  '°'],
             $payload
         );
         // Steuerzeichen entfernen
@@ -932,6 +946,22 @@ class RobonectWifiModul extends IPSModule
                     $this->SetValue("mowerUnixTimestamp", $unixTimestamp);
                     break;
 
+                case 'mowerGpsLatitudeRaw':
+                    $this->SetValue("mowerGpsLatitudeRaw", $payload);
+                    $decimal = $this->convertGpsToDecimal($payload);
+                    if ($decimal !== false) {
+                        $this->SetValue("mowerGpsLatitude", $decimal);
+                    }
+                    break;
+
+                case 'mowerGpsLongitudeRaw':
+                    $this->SetValue("mowerGpsLongitudeRaw", $payload);
+                    $decimal = $this->convertGpsToDecimal($payload);
+                    if ($decimal !== false) {
+                        $this->SetValue("mowerGpsLongitude", $decimal);
+                    }
+                    break;
+
             }
         } catch (Exception $e) {
             if ($this->ReadPropertyBoolean("DebugLog")) {
@@ -1039,6 +1069,14 @@ class RobonectWifiModul extends IPSModule
             IPS_SetVariableProfileText('ROBONECT_Spannung', "", " V");
         }
 
+        // GPS Profiles
+        if (!IPS_VariableProfileExists('ROBONECT_GPS')) {
+            IPS_CreateVariableProfile('ROBONECT_GPS', 2);
+            IPS_SetVariableProfileDigits('ROBONECT_GPS', 10);
+            IPS_SetVariableProfileIcon('ROBONECT_GPS', 'Position');
+            IPS_SetVariableProfileText('ROBONECT_GPS', '', '°');
+        }
+
     }
 
     protected function registerVariables()
@@ -1083,6 +1121,12 @@ class RobonectWifiModul extends IPSModule
         $this->RegisterVariableInteger("mowerErrorCount", "Anzahl Fehlermeldungen", "", 70);
         $this->RegisterVariableString("mowerErrorList", "Fehlermeldungen", "~HTMLBox", 71);
 
+        //--- GPS --------------------------------------------------------------
+        $this->RegisterVariableString("mowerGpsLatitudeRaw", "GPS Latitude (raw)", "", 80);
+        $this->RegisterVariableString("mowerGpsLongitudeRaw", "GPS Longitude (raw)", "", 81);
+        $this->RegisterVariableFloat("mowerGpsLatitude", "GPS Latitude", "ROBONECT_GPS", 82);
+        $this->RegisterVariableFloat("mowerGpsLongitude", "GPS Longitude", "ROBONECT_GPS", 83);
+
         //--- Timer --------------------------------------------------------------
         $this->RegisterVariableInteger("mowerTimerStatus", "Timer Status", "ROBONECT_TimerStatus", 90);
 
@@ -1124,6 +1168,33 @@ class RobonectWifiModul extends IPSModule
         //--- Clock -------------------------------------------------------------
         $this->RegisterVariableInteger("mowerUnixTimestamp", "Interner Unix Zeitstempel", "~UnixTimestamp", 110);
 
+    }
+
+    protected function convertGpsToDecimal(string $pos)
+    {
+        $pos = trim($pos);
+
+        // typische Encoding-Reste und Steuerzeichen entfernen
+        $pos = str_replace(['Â°', '°'], '°', $pos);
+        $pos = preg_replace('/[\x00-\x1F\x7F]+/u', '', $pos);
+        $pos = trim($pos);
+
+        // Falls hinten noch Müll hängt, nur gültigen GPS-Teil übernehmen
+        if (!preg_match('/^([0-9]+)°([0-9]+(?:\.[0-9]+)?)\s*([NSEW])$/u', $pos, $matches)) {
+            return false;
+        }
+
+        $degrees = (float) $matches[1];
+        $minutes = (float) $matches[2];
+        $direction = $matches[3];
+
+        $decimal = $degrees + ($minutes / 60);
+
+        if ($direction === 'S' || $direction === 'W') {
+            $decimal *= -1;
+        }
+
+        return $decimal;
     }
 
 }
