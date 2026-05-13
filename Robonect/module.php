@@ -67,6 +67,9 @@ class RobonectWifiModul extends IPSModule
         };
         $this->log('Update - Semaphore entered');
 
+        // Standard: GPS nicht abfragen, ausser der Status erlaubt es ausdrücklich
+        $shouldUpdateGps = false;
+
         // HTTP status request
         $data = $this->executeHTTPCommand('status');
         if ($data == false) {
@@ -75,6 +78,14 @@ class RobonectWifiModul extends IPSModule
             return false;
         } elseif (isset($data['successful'])) {
             // set values to variables
+
+            if (isset($data['status']['status'])) {
+                $status = (int)$data['status']['status'];
+
+                // 1 = Parkt, 17 = Schläft
+                // GPS nur abfragen, wenn der Mäher NICHT parkt und NICHT schläft
+                $shouldUpdateGps = !in_array($status, [1, 17], true);
+            }
 
             //--- Identification
             if (isset($data['name'])) $this->updateIdent("mowerName", $data['name']);
@@ -95,6 +106,7 @@ class RobonectWifiModul extends IPSModule
             if (isset($data['status']['hours'])) $this->updateIdent("mowerHours", $data['status']['hours']);
             if (isset($data['health']['temperature'])) $this->updateIdent("mowerTemperature", $data['health']['temperature']);
             if (isset($data['health']['humidity'])) $this->updateIdent("mowerHumidity", $data['health']['humidity']);
+
             if (isset($data['blades']['quality'])) {
                 $this->updateIdent("mowerBladesQuality", $data['blades']['quality']);
             }
@@ -125,19 +137,23 @@ class RobonectWifiModul extends IPSModule
             return false;
         } elseif (isset($data['successful'])) {#
             if (isset($data['health']['voltages']['int3v3'])) $this->updateIdent("mowerVoltageInternal", $data['health']['voltages']['int3v3'] / 1000);
-            if (isset($data['health']['voltages']['ext3v3'])) $this->updateIdent("mowerVoltageExternal", $data['health']['voltages']['ext3v3']);
+            if (isset($data['health']['voltages']['ext3v3'])) $this->updateIdent("mowerVoltageExternal", $data['health']['voltages']['ext3v3'] / 1000);
             if (isset($data['health']['voltages']['batt'])) $this->updateIdent("mowerVoltageBattery", $data['health']['voltages']['batt'] / 1000);
         }
 
-        // Get GPS Data
-        $data = $this->executeHTTPCommand('gps');
-        if ($data !== false && isset($data['successful']) && $data['successful']) {
-            if (isset($data['gps']['latitude'])) {
-                $this->updateIdent("mowerGpsLatitudeRaw", $data['gps']['latitude']);
+        // Get GPS Data only if needed
+        if ($shouldUpdateGps) {
+            $data = $this->executeHTTPCommand('gps');
+            if ($data !== false && isset($data['successful']) && $data['successful']) {
+                if (isset($data['gps']['latitude'])) {
+                    $this->updateIdent("mowerGpsLatitudeRaw", $data['gps']['latitude']);
+                }
+                if (isset($data['gps']['longitude'])) {
+                    $this->updateIdent("mowerGpsLongitudeRaw", $data['gps']['longitude']);
+                }
             }
-            if (isset($data['gps']['longitude'])) {
-                $this->updateIdent("mowerGpsLongitudeRaw", $data['gps']['longitude']);
-            }
+        } else {
+            $this->log('GPS skipped (parked or sleeping)');
         }
 
         // Set Timer
@@ -146,6 +162,9 @@ class RobonectWifiModul extends IPSModule
         } else {
             $this->SetTimerInterval("ROBONECT_UpdateTimer", 0);
         }
+
+        // Get Error Data
+        $this->UpdateErrorList();
 
         IPS_SemaphoreLeave($semaphore);
         $this->log('Update - Semaphore leaved');
@@ -196,25 +215,25 @@ class RobonectWifiModul extends IPSModule
         }
 
         $errorCount = count($data['errors']);
-        $this->SetValue("mowerErrorCount", $errorCount);
+        $this->SetValueIfChanged("mowerErrorCount", $errorCount);
 
-        $errorListHTML = '<table>';
-        $errorListHTML = $errorListHTML . '<colgroup>';
-        $errorListHTML = $errorListHTML . '</colgroup>';
-        $errorListHTML = $errorListHTML . '<thead><tr>';
-        $errorListHTML = $errorListHTML . '<th></th>';
-        $errorListHTML = $errorListHTML . '</thead>ID</tr>';
-        $errorListHTML = $errorListHTML . '</thead>Datum</tr>';
-        $errorListHTML = $errorListHTML . '</thead>Uhrzeit</tr>';
-        $errorListHTML = $errorListHTML . '</thead>Fehlercode</tr>';
-        $errorListHTML = $errorListHTML . '</thead>Beschreibung</tr>';
-        $errorListHTML = $errorListHTML . '<tbody>';
+        $errorListHTML = '<table width="100%">';
+        $errorListHTML .= '<thead>';
+        $errorListHTML .= '<tr>';
+        $errorListHTML .= '<th>#</th>';
+        $errorListHTML .= '<th>Datum</th>';
+        $errorListHTML .= '<th>Uhrzeit</th>';
+        $errorListHTML .= '<th>Fehlercode</th>';
+        $errorListHTML .= '<th>Beschreibung</th>';
+        $errorListHTML .= '</tr>';
+        $errorListHTML .= '</thead>';
+        $errorListHTML .= '<tbody>';
 
         for ($x = 0; $x < $errorCount; $x++) {
             $error = $data['errors'][$x];
             $colorCode = '#555555';
             if (($x % 2) != 0) $colorCode = '#333333';
-            $errorListHTML = $errorListHTML . '<tr style="background-color:"' . $colorCode . '>';
+            $errorListHTML .= '<tr style="background-color:' . $colorCode . ';">';
 
             $index = $x + 1;
             $errorListHTML = $errorListHTML . '<td>' . $index . '</td>';
@@ -229,7 +248,7 @@ class RobonectWifiModul extends IPSModule
         $errorListHTML = $errorListHTML . '</tbody>';
         $errorListHTML = $errorListHTML . '</table>';
 
-        $this->SetValue("mowerErrorList", $errorListHTML);
+        $this->SetValueIfChanged("mowerErrorList", $errorListHTML);
 
         IPS_SemaphoreLeave($semaphore);
     }
@@ -241,7 +260,7 @@ class RobonectWifiModul extends IPSModule
             return false;
         } else {
             if ($data['successful'] == true) {
-                $this->SetValue("mowerErrorcount", 0);
+                $this->SetValueIfChanged("mowerErrorCount", 0);
             }
             return $data['successful'];
         }
@@ -576,6 +595,30 @@ class RobonectWifiModul extends IPSModule
         return $success;
     }
 
+    protected function SetValueIfChanged(string $ident, $value): bool
+    {
+        $id = @$this->GetIDForIdent($ident);
+        if ($id === false) {
+            return false;
+        }
+
+        $currentValue = GetValue($id);
+
+        if ($currentValue === $value) {
+            return false;
+        }
+
+        // kleine Toleranz bei Float-Werten
+        if (is_float($currentValue) || is_float($value)) {
+            if (abs((float)$currentValue - (float)$value) < 0.000001) {
+                return false;
+            }
+        }
+
+        $this->SetValue($ident, $value);
+        return true;
+    }
+
     protected function executeHTTPCommand($command)
     {
         $IPAddress = trim($this->ReadPropertyString("IPAddress"));
@@ -630,13 +673,13 @@ class RobonectWifiModul extends IPSModule
                 switch ($Value) {
                     case 0: // manuell
                         if ($this->SetMode('man')) {
-                            $this->SetValue("mowerModeInteractive", $Value);
+                            $this->SetValueIfChanged("mowerModeInteractive", $Value);
                         }
                         break;
                         break;
                     case 1: // Timer auto
                         if ($this->SetMode('auto')) {
-                            $this->SetValue("mowerModeInteractive", $Value);
+                            $this->SetValueIfChanged("mowerModeInteractive", $Value);
                         }
                         break;
                 }
@@ -646,7 +689,7 @@ class RobonectWifiModul extends IPSModule
                 switch ($Value) {
                     case 0: // jetzt mähen
                         if ($this->StartMowingNow(0)) {
-                            $this->SetValue("manualAction", $Value);
+                            $this->SetValueIfChanged("manualAction", $Value);
                         }
                         break;
 
@@ -655,11 +698,11 @@ class RobonectWifiModul extends IPSModule
                         $this->Update();
                         if (GetValueBoolean($this->GetIDForIdent('mowerStopped')) == false) {
                             if ($this->Stop()) {
-                                $this->SetValue("manualAction", 1);
+                                $this->SetValueIfChanged("manualAction", 1);
                             }
                         } else {
                             if ($this->Start()) {
-                                $this->SetValue("manualAction", -1);
+                                $this->SetValueIfChanged("manualAction", -1);
                             }
                         }
                         $this->Update(); // Werte neu ermitteln
@@ -667,7 +710,7 @@ class RobonectWifiModul extends IPSModule
 
                     case 2: // mähen beenden
                         if ($this->SetMode('home')) {
-                            $this->SetValue("manualAction", $Value);
+                            $this->SetValueIfChanged("manualAction", $Value);
                         }
                         $this->Update();
                         break;
@@ -775,7 +818,7 @@ class RobonectWifiModul extends IPSModule
             $this->log('Try to update data ' . $topicList[$topic]['Ident'] . ' with ' . $payload);
             $this->updateIdent($topicList[$topic]['Ident'], $payload);
             if ($topicList[$topic]['Ident'] != 'mowerMqttStatus') {
-                $this->SetValue("mowerMqttStatus", 1); // online
+                $this->SetValueIfChanged("mowerMqttStatus", 1); // online
             }
         } else {
             $this->log('Unknown Topic: ' . $topic . ', Payload: ' . $payload);
@@ -788,47 +831,47 @@ class RobonectWifiModul extends IPSModule
         try {
             switch ($ident) {
                 case 'mowerName':
-                    $this->SetValue("mowerName", $payload);
+                    $this->SetValueIfChanged("mowerName", $payload);
                     break;
                 case 'mowerSerial':
-                    $this->SetValue("mowerSerial", $payload);
+                    $this->SetValueIfChanged("mowerSerial", $payload);
                     break;
 
 
                 case 'mowerMode':
-                    $this->SetValue("mowerMode", $payload);
+                    $this->SetValueIfChanged("mowerMode", $payload);
                     if ($payload == 0) {
-                        $this->SetValue("mowerModeInteractive", 1); // automatisch = Timer
+                        $this->SetValueIfChanged("mowerModeInteractive", 1); // automatisch = Timer
                     } else {
-                        $this->SetValue("mowerModeInteractive", 0); // sonst = manuell
+                        $this->SetValueIfChanged("mowerModeInteractive", 0); // sonst = manuell
                     }
                     break;
                 case 'mowerStatus':
-                    $this->SetValue("mowerStatus", $payload);
+                    $this->SetValueIfChanged("mowerStatus", $payload);
                     break;
                 case 'mowerStatusPlain':
-                    $this->SetValue("mowerStatusPlain", $payload);
+                    $this->SetValueIfChanged("mowerStatusPlain", $payload);
                     break;
                 case 'mowerSubstatus':
-                    $this->SetValue("mowerSubstatus", $payload);
+                    $this->SetValueIfChanged("mowerSubstatus", $payload);
                     break;
                 case 'mowerSubstatusPlain':
-                    $this->SetValue("mowerSubstatusPlain", $payload);
+                    $this->SetValueIfChanged("mowerSubstatusPlain", $payload);
                     break;
                 case 'mowerStopped':
-                    $this->SetValue("mowerStopped", $payload);
+                    $this->SetValueIfChanged("mowerStopped", $payload);
                     if (($payload == false) and (GetValueInteger($this->GetIDForIdent("manualAction")) == 2)) {
                         // "Pause" als Aktion gehighlighted, aber Mäher nicht gestoppt
-                        $this->SetValue("manualAction", -1); // keine Aktion im Webfront gehighlighted
+                        $this->SetValueIfChanged("manualAction", -1); // keine Aktion im Webfront gehighlighted
                     } elseif ($payload == true) {
-                        $this->SetValue("manualAction", 1); // "Pause" Aktion highlighten
+                        $this->SetValueIfChanged("manualAction", 1); // "Pause" Aktion highlighten
                     }
                     break;
                 case 'mowerStatusSinceDurationSec':
                     $durationSince = 0 + filter_var($payload, FILTER_SANITIZE_NUMBER_INT);
                     $statusSinceTimestamp = time() - $durationSince;
                     $this->LogMessage('Duration: ' . $durationSince . ' Timestamp: ' . $statusSinceTimestamp, KL_DEBUG);
-                    $this->SetValue("mowerStatusSince", $statusSinceTimestamp);
+                    $this->SetValueIfChanged("mowerStatusSince", $statusSinceTimestamp);
                     if (intdiv($durationSince, 86400) > 0) {
                         $Text = intdiv($durationSince, 86400) . ' Tag';
                         if (intdiv($durationSince, 86400) > 1) $Text = $Text . 'en';
@@ -837,13 +880,13 @@ class RobonectWifiModul extends IPSModule
                         if (intdiv($durationSince, 3600) > 0) $Text = intdiv($durationSince, 3600) . " Stunden ";
                         $Text = $Text . date("i", $durationSince) . " Minuten";
                     }
-                    $this->SetValue("statusSinceDescriptive", $Text);
+                    $this->SetValueIfChanged("statusSinceDescriptive", $Text);
                     break;
                 case 'mowerStatusSinceDurationMin':
                     $durationSince = 0 + filter_var($payload, FILTER_SANITIZE_NUMBER_INT);
                     $statusSinceTimestamp = time() - $durationSince * 60; // substract seconds
                     $this->log('Duration: ' . $durationSince . ' Timestamp: ' . $statusSinceTimestamp);
-                    $this->SetValue("mowerStatusSince", $statusSinceTimestamp);
+                    $this->SetValueIfChanged("mowerStatusSince", $statusSinceTimestamp);
                     $duration = $durationSince * 60;
                     if (intdiv($duration, 86400) > 0) {
                         $Text = intdiv($duration, 86400) . ' Tag';
@@ -853,12 +896,12 @@ class RobonectWifiModul extends IPSModule
                         if (intdiv($duration, 3600) > 0) $Text = intdiv($duration, 3600) . " Stunden ";
                         $Text = $Text . date("i", $duration) . " Minuten";
                     }
-                    $this->SetValue("statusSinceDescriptive", $Text);
+                    $this->SetValueIfChanged("statusSinceDescriptive", $Text);
                     break;
                 case 'mowerStatusSinceTimestamp':
                     $statusSinceTimestamp = $payload;
                     $difference = (time() - $payload) / 60;
-                    $this->SetValue("mowerStatusSince", $statusSinceTimestamp);
+                    $this->SetValueIfChanged("mowerStatusSince", $statusSinceTimestamp);
                     if (intdiv($difference, 86400) > 0) {
                         $Text = intdiv($difference, 86400) . ' Tag';
                         if (intdiv($difference, 86400) > 1) $Text = $Text . 'en';
@@ -867,24 +910,24 @@ class RobonectWifiModul extends IPSModule
                         if (intdiv($difference, 3600) > 0) $Text = intdiv($difference, 3600) . " Stunden ";
                         $Text = $Text . date("i", $payload) . " Minuten";
                     }
-                    $this->SetValue("statusSinceDescriptive", $Text);
+                    $this->SetValueIfChanged("statusSinceDescriptive", $Text);
                     break;
 
 
                 case 'mowerBatterySoc':
-                    $this->SetValue("mowerBatterySoc", $payload);
+                    $this->SetValueIfChanged("mowerBatterySoc", $payload);
                     break;
                 case 'mowerVoltageBattery':
-                    $this->SetValue("mowerVoltageBattery", $payload);
+                    $this->SetValueIfChanged("mowerVoltageBattery", $payload);
                     break;
                 case 'mowerVoltageInternal':
-                    $this->SetValue("mowerVoltageInternal", $payload);
+                    $this->SetValueIfChanged("mowerVoltageInternal", $payload);
                     break;
                 case 'mowerVoltageExternal':
-                    $this->SetValue("mowerVoltageExternal", $payload);
+                    $this->SetValueIfChanged("mowerVoltageExternal", $payload);
                     break;
                 case 'mowerHours':
-                    $this->SetValue("mowerHours", $payload);
+                    $this->SetValueIfChanged("mowerHours", $payload);
                     break;
                 case 'mowerWlanStatus':
                     $WLANIntensity = 100;
@@ -894,47 +937,47 @@ class RobonectWifiModul extends IPSModule
                     } else {
                         $WLANIntensity = min(max(round(((95 - abs($WLANmDB)) / 60) * 100, 0), 0), 100);
                     }
-                    $this->SetValue("mowerWlanStatus", $WLANIntensity);
+                    $this->SetValueIfChanged("mowerWlanStatus", $WLANIntensity);
                     break;
                 case 'mowerMqttStatus':
                     switch ($payload) {
                         case 'online':
-                            $this->SetValue("mowerMqttStatus", 1);
+                            $this->SetValueIfChanged("mowerMqttStatus", 1);
                             break;
                         default:
-                            $this->SetValue("mowerMqttStatus", 0);
+                            $this->SetValueIfChanged("mowerMqttStatus", 0);
                             break;
                     }
                     break;
                 case 'mowerTemperature':
-                    $this->SetValue("mowerTemperature", $payload);
+                    $this->SetValueIfChanged("mowerTemperature", $payload);
                     break;
                 case 'mowerHumidity':
-                    $this->SetValue("mowerHumidity", $payload);
+                    $this->SetValueIfChanged("mowerHumidity", $payload);
                     break;
                 case 'mowerBladesQuality':
-                    $this->SetValue("mowerBladesQuality", $payload);
+                    $this->SetValueIfChanged("mowerBladesQuality", $payload);
                     break;
                 case 'mowerBladesOperatingHours':
-                    $this->SetValue("mowerBladesOperatingHours", $payload);
+                    $this->SetValueIfChanged("mowerBladesOperatingHours", $payload);
                     break;
                 case 'mowerBladesAge':
-                    $this->SetValue("mowerBladesAge", $payload);
+                    $this->SetValueIfChanged("mowerBladesAge", $payload);
                     break;
 
 
                 case 'mowerTimerStatus':
-                    $this->SetValue("mowerTimerStatus", $payload);
+                    $this->SetValueIfChanged("mowerTimerStatus", $payload);
                     break;
                 case 'mowerNextTimerstart':
                     if ($payload == 0) {
-                        $this->SetValue("mowerNextTimerstart", 0);
+                        $this->SetValueIfChanged("mowerNextTimerstart", 0);
                     } else {
                         $unixTimestamp = $payload;
                         $dateTimeZoneLocal = new DateTimeZone(date_default_timezone_get());
                         $localTime = new DateTime("now", $dateTimeZoneLocal);
                         $unixTimestamp = $unixTimestamp - $dateTimeZoneLocal->getOffset($localTime);
-                        $this->SetValue("mowerNextTimerstart", $unixTimestamp);
+                        $this->SetValueIfChanged("mowerNextTimerstart", $unixTimestamp);
                     }
                     break;
 
@@ -943,22 +986,22 @@ class RobonectWifiModul extends IPSModule
                     $dateTimeZoneLocal = new DateTimeZone(date_default_timezone_get());
                     $localTime = new DateTime("now", $dateTimeZoneLocal);
                     $unixTimestamp = $unixTimestamp - $dateTimeZoneLocal->getOffset($localTime);
-                    $this->SetValue("mowerUnixTimestamp", $unixTimestamp);
+                    $this->SetValueIfChanged("mowerUnixTimestamp", $unixTimestamp);
                     break;
 
                 case 'mowerGpsLatitudeRaw':
-                    $this->SetValue("mowerGpsLatitudeRaw", $payload);
+                    $this->SetValueIfChanged("mowerGpsLatitudeRaw", $payload);
                     $decimal = $this->convertGpsToDecimal($payload);
                     if ($decimal !== false) {
-                        $this->SetValue("mowerGpsLatitude", $decimal);
+                        $this->SetValueIfChanged("mowerGpsLatitude", $decimal);
                     }
                     break;
 
                 case 'mowerGpsLongitudeRaw':
-                    $this->SetValue("mowerGpsLongitudeRaw", $payload);
+                    $this->SetValueIfChanged("mowerGpsLongitudeRaw", $payload);
                     $decimal = $this->convertGpsToDecimal($payload);
                     if ($decimal !== false) {
-                        $this->SetValue("mowerGpsLongitude", $decimal);
+                        $this->SetValueIfChanged("mowerGpsLongitude", $decimal);
                     }
                     break;
 
@@ -983,16 +1026,27 @@ class RobonectWifiModul extends IPSModule
         if (!IPS_VariableProfileExists('ROBONECT_Status')) {
             IPS_CreateVariableProfile('ROBONECT_Status', 1);
             IPS_SetVariableProfileIcon('ROBONECT_Status', '');
-            IPS_SetVariableProfileAssociation("ROBONECT_Status", 0, "Status wird ermittelt", "", 0xFFFFFF);
-            IPS_SetVariableProfileAssociation("ROBONECT_Status", 1, "geparkt", "", 0xFFFFFF);
-            IPS_SetVariableProfileAssociation("ROBONECT_Status", 2, "mäht", "", 0xFFFFFF);
-            IPS_SetVariableProfileAssociation("ROBONECT_Status", 3, "sucht die Ladestation", "", 0xFFFFFF);
-            IPS_SetVariableProfileAssociation("ROBONECT_Status", 4, "lädt", "", 0xFFFFFF);
-            IPS_SetVariableProfileAssociation("ROBONECT_Status", 5, "sucht", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_Status", 0, "Bitte warten...", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_Status", 1, "Parkt", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_Status", 2, "Mäht", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_Status", 3, "Heimweg", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_Status", 4, "Lädt", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_Status", 5, "Suche", "", 0xFFFFFF);
             IPS_SetVariableProfileAssociation("ROBONECT_Status", 7, "Fehlerstatus", "", 0xFFFFFF);
             IPS_SetVariableProfileAssociation("ROBONECT_Status", 8, "Schleifensignal verloren", "", 0xFFFFFF);
             IPS_SetVariableProfileAssociation("ROBONECT_Status", 16, "abgeschaltet", "", 0xFFFFFF);
-            IPS_SetVariableProfileAssociation("ROBONECT_Status", 17, "schläft", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_Status", 17, "Schläft", "", 0xFFFFFF);
+        }
+
+        if (!IPS_VariableProfileExists('ROBONECT_Substatus')) {
+            IPS_CreateVariableProfile('ROBONECT_Substatus', 1);
+            IPS_SetVariableProfileIcon('ROBONECT_Substatus', '');
+            IPS_SetVariableProfileAssociation("ROBONECT_Substatus", 0, "ohne", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_Substatus", 1, "fährt", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_Substatus", 2, "draussen", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_Substatus", 11, "dockt an", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_Substatus", 12, "Schnellladung", "", 0xFFFFFF);
+            IPS_SetVariableProfileAssociation("ROBONECT_Substatus", 14, "Ladung abgeschlossen", "", 0xFFFFFF);
         }
 
         if (!IPS_VariableProfileExists('ROBONECT_InteractiveMode')) {
@@ -1097,7 +1151,7 @@ class RobonectWifiModul extends IPSModule
         $this->RegisterVariableInteger("mowerMode", "Modus", "ROBONECT_Modus", 30);
         $this->RegisterVariableInteger("mowerStatus", "Status", "ROBONECT_Status", 31);
         $this->RegisterVariableString("mowerStatusPlain", "Status (Klartext)", "", 32);
-        $this->RegisterVariableInteger("mowerSubstatus", "Substatus", "", 33);
+        $this->RegisterVariableInteger("mowerSubstatus", "Substatus", "ROBONECT_Substatus", 33);
         $this->RegisterVariableString("mowerSubstatusPlain", "Substatus (Klartext)", "", 34);
         $this->RegisterVariableBoolean("mowerStopped", "man. angehalten", "ROBONECT_JaNein", 35);
         $this->RegisterVariableInteger("mowerStatusSince", "Status seit", "~UnixTimestamp", 36);
