@@ -141,6 +141,9 @@ class RobonectWifiModul extends IPSModule
             if (isset($data['health']['voltages']['batt'])) $this->updateIdent("mowerVoltageBattery", $data['health']['voltages']['batt'] / 1000);
         }
 
+        // Get Error Data
+        $this->UpdateErrorList();
+
         // Get GPS Data only if needed
         if ($shouldUpdateGps) {
             $data = $this->executeHTTPCommand('gps');
@@ -162,9 +165,6 @@ class RobonectWifiModul extends IPSModule
         } else {
             $this->SetTimerInterval("ROBONECT_UpdateTimer", 0);
         }
-
-        // Get Error Data
-        $this->UpdateErrorList();
 
         IPS_SemaphoreLeave($semaphore);
         $this->log('Update - Semaphore leaved');
@@ -595,30 +595,6 @@ class RobonectWifiModul extends IPSModule
         return $success;
     }
 
-    protected function SetValueIfChanged(string $ident, $value): bool
-    {
-        $id = @$this->GetIDForIdent($ident);
-        if ($id === false) {
-            return false;
-        }
-
-        $currentValue = GetValue($id);
-
-        if ($currentValue === $value) {
-            return false;
-        }
-
-        // kleine Toleranz bei Float-Werten
-        if (is_float($currentValue) || is_float($value)) {
-            if (abs((float)$currentValue - (float)$value) < 0.000001) {
-                return false;
-            }
-        }
-
-        $this->SetValue($ident, $value);
-        return true;
-    }
-
     protected function executeHTTPCommand($command)
     {
         $IPAddress = trim($this->ReadPropertyString("IPAddress"));
@@ -731,99 +707,143 @@ class RobonectWifiModul extends IPSModule
 
     public function ReceiveData($JSONString)
     {
+        $topicList = [
+            '/mower/mode'               => 'mowerMode',
+            '/mower/status'             => 'mowerStatus',
+            '/mower/status/plain'       => 'mowerStatusPlain',
+            '/mower/substatus'          => 'mowerSubstatus',
+            '/mower/substatus/plain'    => 'mowerSubstatusPlain',
+            '/mower/stopped'            => 'mowerStopped',
+            '/mower/status/duration'    => 'mowerStatusSinceDurationMin',
 
-        $topicList['/mower/status']['Ident'] = 'mowerStatus';
-        $topicList['/mower/mode']['Ident'] = 'mowerMode';
+            '/mower/battery/charge'     => 'mowerBatterySoc',
+            '/health/voltage/batt'      => 'mowerVoltageBattery',
+            '/health/voltage/int33'     => 'mowerVoltageInternal',
+            '/health/voltage/ext33'     => 'mowerVoltageExternal',
+            '/mower/statistic/hours'    => 'mowerHours',
+            '/wlan/rssi'                => 'mowerWlanStatus',
+            '/mqtt'                     => 'mowerMqttStatus',
+            '/health/climate/temperature' => 'mowerTemperature',
+            '/health/climate/humidity'  => 'mowerHumidity',
+            '/mower/blades/quality'     => 'mowerBladesQuality',
+            '/mower/blades/hours'       => 'mowerBladesOperatingHours',
+            '/mower/blades/days'        => 'mowerBladesAge',
 
-        $topicList['/mower/mode']['Ident'] = 'mowerMode';
-        $topicList['/mower/status']['Ident'] = 'mowerStatus';
-        $topicList['/mower/status/plain']['Ident'] = 'mowerStatusPlain';
-        $topicList['/mower/substatus']['Ident'] = 'mowerSubstatus';
-        $topicList['/mower/substatus/plain']['Ident'] = 'mowerSubstatusPlain';
-        $topicList['/mower/stopped']['Ident'] = 'mowerStopped';
-        $topicList['/mower/status/duration']['Ident'] = 'mowerStatusSinceDurationMin';
+            '/mower/timer/next/unix'    => 'mowerNextTimerstart',
+            '/gps/latitude'             => 'mowerGpsLatitudeRaw',
+            '/gps/longitude'            => 'mowerGpsLongitudeRaw'
+        ];
 
-        $topicList['/mower/battery/charge']['Ident'] = 'mowerBatterySoc';
-        $topicList['/health/voltage/batt']['Ident'] = 'mowerVoltageBattery';
-        $topicList['/health/voltage/int33']['Ident'] = 'mowerVoltageInternal';
-        $topicList['/health/voltage/ext33']['Ident'] = 'mowerVoltageExternal';
-        $topicList['/mower/statistic/hours']['Ident'] = 'mowerHours';
-        $topicList['/wlan/rssi']['Ident'] = 'mowerWlanStatus';
-        $topicList['/mqtt']['Ident'] = 'mowerMqttStatus';
-        $topicList['/health/climate/temperature']['Ident'] = 'mowerTemperature';
-        $topicList['/health/climate/humidity']['Ident'] = 'mowerHumidity';
-        $topicList['/mower/blades/quality']['Ident'] = 'mowerBladesQuality';
-        $topicList['/mower/blades/hours']['Ident'] = 'mowerBladesOperatingHours';
-        $topicList['/mower/blades/days']['Ident'] = 'mowerBladesAge';
-
-        $topicList['/Timer/next/unix']['Ident'] = 'mowerNextTimerstart';
-
-        $topicList['/gps/latitude']['Ident'] = 'mowerGpsLatitudeRaw';
-        $topicList['/gps/longitude']['Ident'] = 'mowerGpsLongitudeRaw';
-
-        if ($JSONString == '') {
+        if ($JSONString === '') {
             $this->log('No JSON');
             return true;
         }
 
+        $this->SendDebug('RAW JSON', $JSONString, 0);
+
         $jsonData = json_decode($JSONString, true);
-        if ($jsonData === false or !isset($jsonData['Buffer'])) {
+        if (!is_array($jsonData) || !isset($jsonData['Buffer'])) {
             $this->log('No MQTT Data');
             return true;
         }
 
-        $mqttTopic = $this->ReadPropertyString("MQTTTopic");
-        if (($mqttTopic == "") or (strlen($jsonData['Buffer']) < 10)) return true;
-
-        if (strpos($jsonData['Buffer'], $mqttTopic . '/') === false) {
+        $mqttTopic = trim($this->ReadPropertyString('MQTTTopic'));
+        $mqttTopic = rtrim($mqttTopic, '/');
+        if ($mqttTopic === '') {
             return true;
         }
 
-        // String in Topic und Payload zerlegen
-        $buffer = $jsonData['Buffer'];
-        $qos = (ord($buffer[0]) >> 1) & 0x03;
-        $pos = 1;
-        do {
-            $encodedByte = ord($buffer[$pos++]);
-        } while (($encodedByte & 128) != 0);
-        $topicLength = (ord($buffer[$pos]) << 8) + ord($buffer[$pos + 1]);
-        $pos += 2;
-        $fullTopic = substr($buffer, $pos, $topicLength);
-        $pos += $topicLength + ($qos > 0 ? 2 : 0);
-        $payload = substr($buffer, $pos);
-        if (($nextTopicPos = strpos($payload, $mqttTopic . '/')) !== false) {
-            $payload = substr($payload, 0, $nextTopicPos);
-        }
-        $payload = trim(preg_replace('/[\x00-\x1F\x7F]+$/', '', $payload));
-        if (strpos($fullTopic, $mqttTopic) !== 0) {
-            return true;
-        }
-        $topic = substr($fullTopic, strlen($mqttTopic));
-        $payload = str_replace(
-            ['Ã¤', 'Ã¶', 'Ã¼', 'Ã„', 'Ã–', 'Ãœ', 'ÃŸ', 'Â°'],
-            ['ä',  'ö',  'ü',  'Ä',  'Ö',  'Ü',  'ß',  '°'],
-            $payload
-        );
-        // Steuerzeichen entfernen
-        $payload = preg_replace('/[\x00-\x1F\x7F]+/u', '', $payload);
-        $payload = trim($payload);
-        // Wenn ein Prozentwert in Klammern vorhanden ist, exakt bis dort übernehmen
-        if (preg_match('/^(.+\(\d{1,3}\s?%\))/u', $payload, $matches)) {
-            $payload = $matches[1];
-        }
+        $buffer = utf8_decode($jsonData['Buffer']);
+        $len = strlen($buffer);
+        $offset = 0;
 
-        $this->log('Topic: ' . $topic . ', Payload: ' . $payload);
-
-        if (isset($topicList[$topic])) {
-            $this->log('Try to update data ' . $topicList[$topic]['Ident'] . ' with ' . $payload);
-            $this->updateIdent($topicList[$topic]['Ident'], $payload);
-            if ($topicList[$topic]['Ident'] != 'mowerMqttStatus') {
-                $this->SetValueIfChanged("mowerMqttStatus", 1); // online
+        while ($offset + 4 <= $len) {
+            // Datensatz-Marker prüfen
+            if (ord($buffer[$offset]) !== 0x31) { // ASCII "1"
+                $offset++;
+                continue;
             }
-        } else {
-            $this->log('Unknown Topic: ' . $topic . ', Payload: ' . $payload);
+
+            $offset++;
+
+            if ($offset >= $len) {
+                break;
+            }
+
+            // Länge des Datensatzes (TopicLen-Feld + Topic + Payload)
+            $recordLength = ord($buffer[$offset]);
+            $offset++;
+
+            if ($offset + 2 > $len) {
+                break;
+            }
+
+            // Topic-Länge (Big Endian)
+            $topicLength = (ord($buffer[$offset]) << 8) + ord($buffer[$offset + 1]);
+            $offset += 2;
+
+            if ($offset + $topicLength > $len) {
+                break;
+            }
+
+            $fullTopic = substr($buffer, $offset, $topicLength);
+            $offset += $topicLength;
+
+            // Payload-Länge aus Record-Länge berechnen
+            $payloadLength = $recordLength - 2 - $topicLength;
+            if ($payloadLength < 0) {
+                $this->SendDebug('Parser ERROR', 'Negative payload length for topic ' . $fullTopic, 0);
+                continue;
+            }
+
+            if ($offset + $payloadLength > $len) {
+                break;
+            }
+
+            $payload = substr($buffer, $offset, $payloadLength);
+            $offset += $payloadLength;
+
+            if (strpos($fullTopic, $mqttTopic . '/') !== 0) {
+                continue;
+            }
+
+            $topic = substr($fullTopic, strlen($mqttTopic));
+            $topic = '/' . ltrim($topic, '/');
+
+            // Nur Payload bereinigen, nicht den ganzen Buffer
+            $payload = str_replace(
+                ['Ã¤', 'Ã¶', 'Ã¼', 'Ã„', 'Ã–', 'Ãœ', 'ÃŸ', 'Â°'],
+                ['ä',  'ö',  'ü',  'Ä',  'Ö',  'Ü',  'ß',  '°'],
+                $payload
+            );
+
+            $payload = preg_replace('/[\x00-\x1F\x7F]+/', '', $payload);
+            if ($payload === null) {
+                $payload = '';
+            }
+
+            $payload = trim($payload, "\" \r\n\t");
+
+            $this->log('Topic: ' . $topic . ', Payload: ' . $payload);
+
+            if (isset($topicList[$topic])) {
+                $this->log('Try to update data ' . $topicList[$topic] . ' with ' . $payload);
+                $this->SendDebug('MQTT Matched Topic', $topic, 0);
+                $this->SendDebug('MQTT Matched Ident', $topicList[$topic], 0);
+                $this->SendDebug('MQTT Payload', $payload, 0);
+                $this->SendDebug('MQTT Payload Hex', bin2hex($payload), 0);
+
+                $this->updateIdent($topicList[$topic], $payload);
+
+                if ($topicList[$topic] !== 'mowerMqttStatus') {
+                    $this->SetValueIfChanged('mowerMqttStatus', 1);
+                }
+            } else {
+                $this->log('Unknown Topic: ' . $topic . ', Payload: ' . $payload);
+            }
         }
 
+        return true;
     }
 
     protected function updateIdent(string $ident, $payload)
@@ -1251,4 +1271,27 @@ class RobonectWifiModul extends IPSModule
         return $decimal;
     }
 
+    protected function SetValueIfChanged(string $ident, $value): bool
+    {
+        $id = @$this->GetIDForIdent($ident);
+        if ($id === false) {
+            return false;
+        }
+
+        $currentValue = GetValue($id);
+
+        if ($currentValue === $value) {
+            return false;
+        }
+
+        // kleine Toleranz bei Float-Werten
+        if (is_float($currentValue) || is_float($value)) {
+            if (abs((float)$currentValue - (float)$value) < 0.000001) {
+                return false;
+            }
+        }
+
+        $this->SetValue($ident, $value);
+        return true;
+    }
 }
