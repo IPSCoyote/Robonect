@@ -141,10 +141,7 @@ class RobonectWifiModul extends IPSModule
             if (isset($data['health']['voltages']['batt'])) $this->updateIdent("mowerVoltageBattery", $data['health']['voltages']['batt'] / 1000);
         }
 
-        // Get Error Data
-        $this->UpdateErrorList();
-
-        // Get GPS Data only if needed
+        // Get GPS and Error Data only if needed
         if ($shouldUpdateGps) {
             $data = $this->executeHTTPCommand('gps');
             if ($data !== false && isset($data['successful']) && $data['successful']) {
@@ -155,8 +152,12 @@ class RobonectWifiModul extends IPSModule
                     $this->updateIdent("mowerGpsLongitudeRaw", $data['gps']['longitude']);
                 }
             }
+
+            // Fehlerliste nur abfragen, wenn der Mäher nicht parkt und nicht schläft
+            $this->UpdateErrorList();
+
         } else {
-            $this->log('GPS skipped (parked or sleeping)');
+            $this->log('GPS and error list skipped (parked or sleeping)');
         }
 
         // Set Timer
