@@ -754,7 +754,7 @@ class RobonectWifiModul extends IPSModule
             return true;
         }
 
-        $buffer = mb_convert_encoding($jsonData['Buffer'], '"UTF-8', 'ISO-8859-1');
+        $buffer = mb_convert_encoding($jsonData['Buffer'], 'ISO-8859-1', 'UTF-8');
         $len = strlen($buffer);
         $offset = 0;
 
