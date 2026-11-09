@@ -891,7 +891,7 @@ class RobonectWifiModul extends IPSModule
                 case 'mowerStatusSinceDurationSec':
                     $durationSince = 0 + filter_var($payload, FILTER_SANITIZE_NUMBER_INT);
                     $statusSinceTimestamp = time() - $durationSince;
-                    $this->LogMessage('Duration: ' . $durationSince . ' Timestamp: ' . $statusSinceTimestamp);
+                    $this->log('Duration: ' . $durationSince . ' Timestamp: ' . $statusSinceTimestamp);
                     $this->SetValueIfChanged("mowerStatusSince", $statusSinceTimestamp);
                     if (intdiv($durationSince, 86400) > 0) {
                         $Text = intdiv($durationSince, 86400) . ' Tag';
